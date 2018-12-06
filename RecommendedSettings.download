@@ -1,0 +1,12 @@
+The reccommended setup for your FTP server is as follows:
+1] Create two users. One for the administrator, one for the average user. Admin should have a stronger password.
+2] Connect with either user, run the setup.
+3] Block access to the average user for modifying contents of the folder Admin in the newly created CHAT folder.
+4] Also Block access to the folder Mods.
+5] From there on you can set up the rest from inside the chat program.
+
+RECOMMENDED REQUIREMENTS FOR YOUR CHAT SERVER:
+- No connection limit
+- No Connection count limit
+- Bandwidth restriction if you don't trust all the users.
+- At least 1GB of storage, you'll probably want at least 16 GB if you plan on using the file sharing portion a lot.
