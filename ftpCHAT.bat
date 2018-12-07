@@ -3,7 +3,7 @@ set version=2.0.12
 set debug=false
 set CodeColor=80
 set updateDelay=7
-setloacl EnableDelayedExpansion
+setlocal EnableDelayedExpansion
 :reset
 color 07
 if not exist Bin\ md Bin
@@ -14,9 +14,8 @@ if not exist batbox.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist tick.wav  call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/tick.wav" -saveto "%cd%\tick.wav" >nul
 if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/cmdwiz.exe" -saveto "%cd%\cmdwiz.exe" >nul
 if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/LC.exe" -saveto "%cd%\LC.exe" >nul
-
-
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
+if "%~1"=="updated" goto cleanupdate
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
 if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
 call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd"
@@ -236,7 +235,7 @@ if %errorlevel%==0 call :c a0 "You are up to date." & pause & cls & goto type
 set /p nv=<"versionDownload.txt"
 call :c 0f "An Update is available: %nv%"
 call :c 0f "Downloading . . ."
-bitsadmin /transfer myDownloadJob /download /priority High https://raw.githubusercontent.com/ITCMD/chat-batch/master/chat.bat "%cd%\chatUPDATE.txt" >nul
+bitsadmin /transfer myDownloadJob /download /priority High https://raw.githubusercontent.com/ITCMD/ftpchat/master/ftpCHAT.bat "%cd%\chatUPDATE.txt" >nul
 call :c 08 "Checking Notification Updates . . ."
 call :c 08 "Installing . . ."
 echo @echo off >update.bat
@@ -264,12 +263,7 @@ if exist "chat-listener.bat" del /f /q "chat-listener.bat"
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Made changes to the log viewer.
-echo Researched a bug report system. Should be available in the next release.
-echo Removed Herobrine.
-echo Updated the title bar to include script snippits.
-echo Added a Hamachi Guide
-echo Worked on the bug report system.
+echo First Update
 pause
 goto topreset
 
