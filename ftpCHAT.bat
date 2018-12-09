@@ -1,5 +1,7 @@
 @echo off
-set version=2.0.12
+set ver=2.0.13
+set defaultColor=0f
+set usercolor=0a
 set debug=false
 set CodeColor=80
 set updateDelay=7
@@ -16,9 +18,16 @@ if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/LC.exe" -saveto "%cd%\LC.exe" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
+if not exist FTPCHATListener.bat call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/Listener.bat" -saveto "%cd%\FTPCHATListener.bat" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
+ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
+call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
+ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat" "ServerInfo.itcmd"
+
 if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
-call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd"
+ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
+call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
+ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
 
 goto start
 ::+_++#$(#(#(#)# ??
@@ -30,8 +39,8 @@ call :c 0a "Welcome. Please Enter a Username to use."
 call :c 08 "You can use: a-z, 0-9, @#$].~+-=_/\:;"
 set /p usr=">"
 call :c 08 "Checking if available . . ."
-call :ftp "nul" "cd CHAT" "get 54.dll"
-find "%usr%Pass" "54.dll" >nul
+call :ftp "out.txt" "cd CHAT" "get 54.dll"
+find /I "%usr%Pass" "54.dll" >nul
 if %errorlevel%==0 goto login
 call :c 0a "Great %usr%, Enter a password."
 call :c 08 "You can use: a-z, 0-9, @#$].~+-=_/\:;"
@@ -42,6 +51,7 @@ if not "%pas%"=="%pas2%" echo Does not match & pause & goto setupUser
 call :C 0a "Great. Saving . . ."
 call :ftp "nul" "cd CHAT" "get 54.dll"
 (echo set %Usr%Pass=%pas%)>>54.dll
+pause
 call :ftp "nul" "cd CHAT" "put 54.dll"
 del /f /q 54.dll
 call :c 0a "Logging in" /n
@@ -59,17 +69,42 @@ call :c 0f "Username is in use. Enter Password or X to cancel."
 call :c 08 "Password will be hidden."
 call batbox /c 0x00
 set /p pas=">"
-if not "%pas%"=="!%usr%pass!" goto nope
+call batbox /c 0x%defaultColor%
+setlocal EnableDelayedExpansion
+find /I "%usr%pass=%pas%" "54.dll"
+if not %errorlevel%==0 goto nope
+del /f /q 54.dll
+Endlocal
+(echo set usr=%usr%)>"C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd"
 call :C 0a "Logging in . . ."
 cls
+goto start
+
+:nope
+cls
+echo Password incorrect. %usr%Pass=%pas%
+del /f /q 54.dll
+set >test.t
+Endlocal
+pause
+cd ..
+goto reset
 
 :start
-call :ftp "nul" "cd CHAT" "get Welcome.bat"
+cls
+if exist Welcome.bat del /f /q Welcome.bat
+call :ftp "nul" "cd CHAT" "get admin/Welcome.bat"
+if not exist Welcome.bat goto offline
 call :c 08 "Running ITCMD OS Version %ver%"
+echo.
 call Welcome.bat
-timeout /t 2 >nul
+timeout /t 3 >nul
 goto mainchat
 
+:offline
+call :c 0c "SERVER OFFLINE!"
+pause
+exit /b
 
 
 
@@ -127,6 +162,7 @@ echo saving . . .
 (echo set ftppass=%ftppass%)>>"C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd"
 call :c 0a "Setup Saved. Resetting . . ."
 timeout /t 2 >nul
+cd ..
 goto reset
 
 :notsetup
@@ -158,7 +194,7 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do set timestamp=%%x & goto
 :endstamp1
 echo %hh%:%min%:%ss%]SERVER} Beginning of Chat >%timestamp%.chat.0a
 echo. 2>54.dll
-call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "put Welcome.txt Welcome.bat" "cd Chats" "put %timestamp%.chat" "put 54.dll"
+call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin: "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp%.chat.07" "put 54.dll"
 del /f /q Welcome.txt
 call :c 0a "Testing if Setup was Successful"
 call :ftp "test.ftp" "cd CHAT" "ls"
@@ -184,6 +220,7 @@ echo Saving . . .
 (echo set ftppass=%ftppass%)>>"C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd"
 call :c 0a "Setup Saved."
 pause
+cd ..
 goto reset
 
 
@@ -222,6 +259,7 @@ goto ftploop
 :endftploop
 (echo quit)>>temp.ftp
 ftp -s:temp.ftp %server% >%out%
+del /f /q temp.ftp
 exit /b
 
 
@@ -265,7 +303,8 @@ echo.
 call :c f0 "changelog:"
 echo First Update
 pause
-goto topreset
+cd ..
+goto reset
 
 
 
@@ -276,43 +315,52 @@ cls
 cd chat
 call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *"
 cd ..
-dir /b chat >chatorder.txt
+dir /b Chat >chatorder.txt
 setlocal EnableDelayedExpansion
 for /f "tokens=*" %%A in (chatorder.txt) do (
+	cd Chat
 	set color=%%~xA
-	set /p text=<"Chat\%%A"
-	if "!color!"=="code" for /f "tokens=*" %%I in (Chat\%%A) do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
-	call :c !color! "!txt!"
+	set color=!color:~1!
+	set /p text=<"%%A"
+	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
+	call :c !color! "!text!"
+	cd ..
 )
 :wait
-choice /c QTBUO /d Q /t %updateDelay% /n
+title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk H-Help U-Update O-Options
+cd Chat
+for /f %%A in ('dir ^| find "File(s)"') do set cnt=%%A
+cd ..
+choice /c QTBUO /d Q /t %updateDelay% /n >nul
 if %errorlevel%==1 goto refresh
 if %errorlevel%==2 goto talk
-
-
-:refresh
-::echo cur time into file
-echo %time::=% >%usr%
-cd chat
-call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put %usr%"
-cd ..
-dir /b chat >chatorder2.txt
-fc chatorder.txt chatorder2.txt >nul
-if %errorlevel%==1 goto nextrefresh
+if %errorlevel%==4 goto update
+if %errorlevel%==5 goto options
 goto wait
 
-:nextrefresh
-cmdwiz playsound tick.wav
-lc chatorder chatorder2
-for /f "tokens=*" %%A in (new.txt) do (
-	set color=%%~xA
-	set /p text=<"Chat\%%A"
-	if "!color!"=="code" for /f "tokens=*" %%I in (Chat\%%A) do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
-	call :c !color! "!txt!"
-)
-goto wait
+:options
+Title OPTIONS      FTP-CHAT
+cls
+call :c 0f " Options Menu:"
+call :c 0b "------------------------------"
+call :c 0f "1] Sound:" /n
+if exist "C:\users\%username%\Appdata\Chat\Mute" call :c 0c " Muted"
+if not exist "C:\users\%username%\Appdata\Chat\Mute" call :c 0a " On"
+call :c 0f "2] Color Settings
+call :c 0f "3] Log Out User"
+call :c 0f "4] Log Out Server"
+call :c 0f "5] View Log" 
+call :c 0f "6] Report Bugs"
+call :c 0f "7] Clear Chat"
+call :c 08 "8] Exit"
+choice /c "1234567"
+if %errorlevel%==8 goto mainchat
+if %errorlevel%==7 goto clear
+if %errorlevel%==3 del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
+if %errorlevel%==4 del /f /q "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" & del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
+goto mainchat
 
-:talk
+:clear
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
       set dow=%%i
@@ -324,13 +372,77 @@ for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') d
       set ss=%%o
    )
 )
-for /f "skip=1" %%x in ('wmic os get localdatetime') do set timestamp=%%x & goto endstamp1
-:endstamp1
-set /p Msg="Message>"
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>%CurrMonth%%CurrDay%%hh%%min%%ss%.Message.06
+call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "mdelete *" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.Message.06"
+del /f /q Chat\*.*.*
+goto mainchat
 
-echo %hh%:%min%:%ss%]%usr%} Beginning of Chat >%timestamp%.chat.0a
+:refresh
+::echo cur time into file
+del /f /q Chat\*.*.*
+(echo %time::=%)>%usr%
+cd chat
+call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put ..\%usr%"
+for /f %%A in ('dir ^| find "File(s)"') do set cnt2=%%A
+cd ..
+dir /b chat >chatorder2.txt
+fc chatorder.txt chatorder2.txt >nul
+if %errorlevel%==1 goto nextrefresh
+goto wait
 
+:nextrefresh
+if not exist "C:\users\%username%\Appdata\Chat\Mute" cmdwiz playsound tick.wav
+if %cnt2% LSS %cnt% goto mainchat
+lc chatorder.txt chatorder2.txt
+for /f "tokens=*" %%A in (new.txt) do (
+	cd Chat
+	set color=%%~xA
+	set color=!color:~1!
+	set /p text=<"%%A"
+	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
+	echo "!text!"|find "Server] Chat Cleared" >nul
+	if !errorlevel!==0 goto mainchat
+	call :c !color! "!text!"
+	cd ..
+)
+dir /b Chat >chatorder.txt
+goto wait
 
+:talk
+set /p Msg="Message}%usr%>"
+for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
+   for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
+      set dow=%%i
+      set %%a=%%j
+      set %%b=%%k
+      set %%c=%%l
+      set hh=%%m
+      set min=%%n
+      set ss=%%o
+   )
+)
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+:endstamp2
+echo %hh%:%min%:%ss%} %usr%] %msg% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
+call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
+goto refresh
 
 
 
