@@ -6,7 +6,6 @@ set debug=false
 set CodeColor=80
 set updateDelay=7
 setlocal EnableDelayedExpansion
-if "%~1"=="updated" cd ..
 :reset
 color 07
 if not exist Bin\ md Bin
@@ -265,6 +264,7 @@ exit /b
 
 
 :update
+cd ..
 cls
 call :c 0a "Checking for update . . ."
 call :c 08 "This Version: %ver%"
@@ -292,6 +292,7 @@ exit
 
 :cleanupdate
 cls
+cd..
 call :c a0 "Update Installed."
 call :c 08 "Cleaning up . . ."
 timeout /t 3 >nul
@@ -304,7 +305,6 @@ echo.
 call :c f0 "changelog:"
 echo First Update
 pause
-cd ..
 goto reset
 
 
