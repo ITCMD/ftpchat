@@ -1,11 +1,13 @@
 @echo off
-set ver=2.0.13
+set ver=2.0.14
 set defaultColor=0f
 set usercolor=0a
 set debug=false
-set CodeColor=80
+set CodeColor=70
 set updateDelay=7
+if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
 setlocal EnableDelayedExpansion
+if "%~1"=="antiviral" goto antiviral
 :reset
 color 07
 if not exist Bin\ md Bin
@@ -23,7 +25,6 @@ if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat" "ServerInfo.itcmd"
-
 if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
@@ -193,8 +194,9 @@ for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') d
 for /f "skip=1" %%x in ('wmic os get localdatetime') do set timestamp=%%x & goto endstamp1
 :endstamp1
 echo %hh%:%min%:%ss%]SERVER} Beginning of Chat >%timestamp%.chat.0a
+echo CREATED SERVER %date% %time% >log.txt
 echo. 2>54.dll
-call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin: "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp%.chat.07" "put 54.dll"
+call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin: "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp%.chat.07" "cd .." "put 54.dll" "cd log" "put log.txt"
 del /f /q Welcome.txt
 call :c 0a "Testing if Setup was Successful"
 call :ftp "test.ftp" "cd CHAT" "ls"
@@ -317,27 +319,156 @@ cd chat
 call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *"
 cd ..
 dir /b Chat >chatorder.txt
+set CodeCount=0
 setlocal EnableDelayedExpansion
 for /f "tokens=*" %%A in (chatorder.txt) do (
 	cd Chat
 	set color=%%~xA
 	set color=!color:~1!
 	set /p text=<"%%A"
-	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
+	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (
+		set /a CodeCount+=1
+		set code!CodeCount!=%%A
+		set color=!CodeColor! 
+		for /f %%W in ("%%~nA") do (set text=%%~xW)
+		set text=!text:~1!] [4m{Press B and select !CodeCount! to View Code}[0m)
+		
 	call :c !color! "!text!"
 	cd ..
 )
 :wait
-title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk H-Help U-Update O-Options
+title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files
 cd Chat
 for /f %%A in ('dir ^| find "File(s)"') do set cnt=%%A
 cd ..
-choice /c QTBUO /d Q /t %updateDelay% /n >nul
+choice /c QTBUOF /d Q /t %updateDelay% /n >nul
 if %errorlevel%==1 goto refresh
 if %errorlevel%==2 goto talk
 if %errorlevel%==4 goto update
 if %errorlevel%==5 goto options
+if %errorlevel%==3 goto viewCode
+if %errorlevel%==6 goto fileman
 goto wait
+
+11
+:fileman
+cls
+call :c 0f "====== File Manager 3.6 ======"
+call :c 0a "1] Upload a file"
+call :c 0a "2] View files"
+call :c 02 "X] Go Back"
+choice /c 12x
+if %errorlevel%==3 goto mainchat
+if %errorlevel%==1 goto upload
+:viewFiles
+cls
+call :c 0f "====== File Manager 3.6 ======"
+call :ftp "FileListBase.txt" "cd CHAT/Files" "ls"
+for /F "delims=" %%j in (FileListBase.txt) do (
+  set /A count+=1
+)
+set /a count-=3
+set count2=0
+echo. 2>FileList.txt 1>nul
+for /F "delims=" %%j in (FileListBase.txt) do (
+  set /A count2+=1
+  if !count2!==!count! goto eo
+  (echo %%j)>>FileList.txt
+)
+:eo
+call :c 0a "Please select a file to open."
+del /f /q FileListBase.txt
+set Files=0
+for /f "tokens=* skip=11" %%A in (FileList.txt) do (
+	set /a Files+=1
+	set File!Files!=%%A
+	call :c 0f "!Files!] %%A"
+)
+call :c 08 "Enter -X to Exit"
+set /p fcho=">"
+if /i "%fcho%"=="-x" goto fileman
+if "!File%fcho%!"=="" goto eo
+cls
+call :c 07 "Downloading !File%fcho%! . . ."
+if not exist ..\Files\ md ..\Files\
+cd ..\Files
+call :ftp "nul" "cd CHAT/Files" "get !File%fcho%!"
+cd ..\Bin
+call :c 07 "Download Complete."
+call :c 0a "Would You like to scan this file with Windows Defender?"
+choice 
+if %errorlevel%==1 (
+	cd ..\Files
+	call :scan "%cd%\!File%fcho%!"
+	cd ..\Bin
+)
+call :c 0a "Opening File . . ."
+timeout /t 2 >nul
+explorer /select,"..\Files\!File%fcho%!"
+pause
+goto mainchat
+
+
+:Upload
+cls
+call :c 0f "====== File Manager 3.6 ======"
+echo.
+call :c 0a "Drag and Drop File Onto Screen."
+call :c 08 "Or Enter Path Manually. Enter -X to cancel."
+set /p FileUpload=">"
+if /i %FileUpload%==-X goto Fileman
+if not exist "%FileUpload%" echo File Not Found. & pause & goto Upload
+call :c 0a "Uploading File . . ."
+(echo %ftpusr%)>temp.ftp
+(echo %ftppass%)>>temp.ftp
+(echo cd CHAT/Files)>>temp.ftp
+(echo put %FileUpload%)>>temp.ftp
+(echo quit)>>temp.ftp
+ftp -s:temp.ftp %server% >temp.output.txt
+del /f /q temp.ftp
+find "bytes sent in" "temp.output.txt" >nul
+if not %errorlevel%==0 goto uploadfail
+del /f /q temp.output.txt
+call :c 0a "Upload Successful."
+pause
+goto mainchat
+
+:uploadfail
+color 08
+call :c 0c "Upload Failed."
+call :c 02 "Log File:"
+type temp.output.txt"
+pause
+goto mainchat
+
+
+
+:ViewCode
+if "%CodeCount%"=="" goto wait
+call :C 0f "Which Code Would You Like To Select?"
+call :c 08 "Choose option 1-%CodeCount%"
+:choc
+choice /c 123456789 /n
+cls
+if %errorlevel% GTR %CodeCount% goto choc
+set Num=%errorlevel%
+:LoadCode
+call :c 0a "Displaying Code . . ."
+batbox /c 0x02
+type !Code%Num%!
+echo.
+batbox /c 0x%defaultColor%
+call :c 0f "Would you like to copy that code to your clipboard?"
+choice /c yn
+if %errorlevel%==2 goto mainchat
+call :c 0a "Copying to clipboard . . ."
+clip < !Code%Num%!
+call :c 0a "Success."
+pause
+goto mainchat
+
+
+
 
 :options
 Title OPTIONS      FTP-CHAT
@@ -345,8 +476,8 @@ cls
 call :c 0f " Options Menu:"
 call :c 0b "------------------------------"
 call :c 0f "1] Sound:" /n
-if exist "C:\users\%username%\Appdata\Chat\Mute" call :c 0c " Muted"
-if not exist "C:\users\%username%\Appdata\Chat\Mute" call :c 0a " On"
+if exist "C:\users\%username%\Appdata\FTPCHAT\Mute" call :c 0c " Muted"
+if not exist "C:\users\%username%\Appdata\FTPCHAT\Mute" call :c 0a " On"
 call :c 0f "2] Color Settings
 call :c 0f "3] Log Out User"
 call :c 0f "4] Log Out Server"
@@ -354,14 +485,82 @@ call :c 0f "5] View Log"
 call :c 0f "6] Report Bugs"
 call :c 0f "7] Clear Chat"
 call :c 08 "8] Exit"
-choice /c "1234567"
+choice /c "12345678"
+if %errorlevel%==1 call :muteChange
 if %errorlevel%==8 goto mainchat
 if %errorlevel%==7 goto clear
 if %errorlevel%==3 del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 if %errorlevel%==4 del /f /q "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" & del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
+if %errorlevel%==2 goto colorchange
 goto mainchat
 
+:muteChange
+if exist "C:\users\%username%\Appdata\FTPCHAT\Mute" del /f /q "C:\users\%username%\Appdata\FTPCHAT\Mute" & exit /b
+if not exist "C:\users\%username%\Appdata\FTPCHAT\Mute" echo. > "C:\users\%username%\Appdata\FTPCHAT\Mute"
+exit /b
+
+
+:colorchange
+cls
+call :c 0f "Please Select Your Color:"
+call :c 0a "1] Green"
+call :c 0b "2] Aqua"
+call :c 0e "3] Yellow"
+call :c 07 "4] White"
+call :c %usercolor% "5] Unchanged"
+choice /c 12345
+if %errorlevel%==1 set usercolor=0a
+if %errorlevel%==2 set usercolor=0b
+if %errorlevel%==3 set usercolor=0e
+if %errorlevel%==4 set usercolor=07
+if %errorlevel%==5 echo.
+(echo set UserColor=%usercolor%)> "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
+echo Color Changed.
+timeout /t 2 >nul
+goto mainchat
+
+
+:scan
+if not exist "%~1" call :c 0c "File not found: `%~1` & exit /b
+call :c 07 "Scanning . . ."
+if not exist "%programFiles%\Windows Defender\MpCmdRun.exe" call :c 0c "Windows Defender Not Installed." & exit /b
+call :c 08 "Note that your pc may detect it automatically and delete it before this program can remove it."
+"%programFiles%\Windows Defender\MpCmdRun" -Scan -ScanType 3 -File "%~1" >nul
+if %errorlevel%==0 call :c 0a "No Threats Found" & exit /b
+call :c 0c "Either a Threat was found or an error occured."
+call :c 08 "Testing if the file was removed."
+if not exist "%~1" call :c 0a  "The File was Removed from your PC Successfuly." & exit /b
+call :c 0c "The File Was Not Removed. Removing it manually..."
+call :c 08 "Del /f /q '%~1'"
+del /f /q "%~1"
+if not exist "%~1" call :c 0a  "The File was Removed from your PC Successfuly." & exit /b
+call :c c0 "ALERT!  The file could not be removed!"
+call :c 0c "Starting a system Wide Scan . . ."
+call :c 08 "Please Accept Admin Prompt to scan"
+echo %cd%>"C:\users\%username%\CDC.txt"
+powershell start -verb runas '%0' antiviral "%~1" & exit
+:antiviral
+set /p cdd=<"C:\users\%username%\CDC.txt"
+cd %cdd%
+call :c 0c "Scanning Individual File First"
+"%programFiles%\Windows Defender\MpCmdRun" -Scan -ScanType 3 -File "%~2"
+if not %errorlevel%==0 call :c 0c "Failure."
+call :c 0c "Starting Full System Scan . . ."
+"%ProgramFiles%\Windows Defender\MpCmdRun.exe" -Scan -ScanType 2
+pause
+exit
+
+
 :clear
+echo. 2>log
+for /f "tokens=*" %%A in (chatorder.txt) do (
+	set /p text=<"%%A"
+	echo !text! >>log
+)
+call :ftp "nul" "cd CHAT" "cd log" "get log.txt"
+type log >> log.txt
+call :ftp "nul" "cd CHAT" "cd log" "put log.txt"
+
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
       set dow=%%i
@@ -382,8 +581,8 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
-echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>%CurrMonth%%CurrDay%%hh%%min%%ss%.Message.06
-call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "mdelete *" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.Message.06"
+echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>00000000001.Message.06
+call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "mdelete *" "put 00000000001.Message.06"
 del /f /q Chat\*.*.*
 goto mainchat
 
@@ -401,7 +600,7 @@ if %errorlevel%==1 goto nextrefresh
 goto wait
 
 :nextrefresh
-if not exist "C:\users\%username%\Appdata\Chat\Mute" cmdwiz playsound tick.wav
+if not exist "C:\users\%username%\Appdata\FTPChat\Mute" cmdwiz playsound tick.wav
 if %cnt2% LSS %cnt% goto mainchat
 lc chatorder.txt chatorder2.txt
 for /f "tokens=*" %%A in (new.txt) do (
@@ -409,17 +608,58 @@ for /f "tokens=*" %%A in (new.txt) do (
 	set color=%%~xA
 	set color=!color:~1!
 	set /p text=<"%%A"
-	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (set code=%%I & set color=!CodeColor! & set text=!text! [4m{Press B to View Code}[0m)
-	echo "!text!"|find "Server] Chat Cleared" >nul
-	if !errorlevel!==0 goto mainchat
+	if "!color!"=="code" for /f "tokens=*" %%I in ("%%A") do (
+		set /a CodeCount+=1
+		set code!CodeCount!=%%A
+		set color=!CodeColor! 
+		for /f %%W in ("%%~nA") do (set text=%%~xW)
+		set text=!text:~1!] [4m{Press B and select !CodeCount! to View Code}[0m)
+		
 	call :c !color! "!text!"
 	cd ..
 )
 dir /b Chat >chatorder.txt
 goto wait
 
+
+:codeshare
+call :c 0f "A Window will open. Enter script, save it, and close it."
+echo. 2>code.txt
+notepad code.txt
+for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
+   for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
+      set dow=%%i
+      set %%a=%%j
+      set %%b=%%k
+      set %%c=%%l
+      set hh=%%m
+      set min=%%n
+      set ss=%%o
+   )
+)
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+ren code.txt %CurrMonth%%CurrDay%%hh%%min%%ss%.%usr%.code
+call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.%usr%.code"
+call :c 0a "Success."
+timeout /t 2 >nul
+goto mainchat
+
 :talk
+title Enter "-C" to enter code. Enter "-X" to cancel.
+Batbox /c 0x%usercolor%
 set /p Msg="Message}%usr%>"
+Batbox /c 0x%defaultcolor%
+title %DefaultTitle%
+if /i "%msg%"=="-x" goto refresh
+if /i "%msg%"=="-c" goto codeshare
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
       set dow=%%i
@@ -443,6 +683,7 @@ for /F "skip=1 delims=" %%F in ('
 :endstamp2
 echo %hh%:%min%:%ss%} %usr%] %msg% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
+del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 goto refresh
 
 
