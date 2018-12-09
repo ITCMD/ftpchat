@@ -6,6 +6,7 @@ set debug=false
 set CodeColor=80
 set updateDelay=7
 setlocal EnableDelayedExpansion
+if "%~1"=="updated" cd ..
 :reset
 color 07
 if not exist Bin\ md Bin
