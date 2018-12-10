@@ -13,6 +13,7 @@ goto pidload
 
 
 :pidload
+echo Loaded >loaded.status
 cls
 echo found on: %PID%
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
