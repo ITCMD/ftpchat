@@ -597,7 +597,6 @@ exit
 :clear
 echo. 2>log
 for /f "tokens=*" %%A in (chatorder.txt) do (
-	echo %%A
 	set /p text=<"chat\%%A"
 	echo !text! >>log
 )
