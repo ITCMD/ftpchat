@@ -19,7 +19,7 @@ An FTP Server with no connection limit.
 Nothing else!
 
 # Special Thanks to
-TheBATeam (www.thebateam.org) - general help
-Bubb11/Josiah/JoJo (many names for many talents) - co designer for original chat program: https://github.com/ITCMD/chat-batch
+TheBATeam (www.thebateam.org) - general help <br>
+Bubb11/Josiah/JoJo (many names for many talents) - co designer for original chat program: https://github.com/ITCMD/chat-batch <br>
 Lucas Elliott - thats me.
 
