@@ -5,6 +5,7 @@ set usercolor=0a
 set debug=false
 set CodeColor=70
 set updateDelay=7
+set Update=No
 if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
 setlocal EnableDelayedExpansion
 if "%~1"=="antiviral" goto antiviral
@@ -30,9 +31,32 @@ call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
 if not exist "Listener-Launcher.vbs" call :makevbs
 if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+set CurrDay=%CurrDay:~-2%
+if not exist LastUpdate.txt (echo %currDay%)>LastUpdate.txt
+set /p OldDay=<LastUpdate.txt
+if not "%OldDay%"=="%CurrDay%" call :updateCheckup
 goto start
 ::+_++#$(#(#(#)# ??
 ::Load
+
+
+
+:UpdateCheckup
+bitsadmin /transfer myDownloadJob /download /priority Low https://github.com/ITCMD/ftpchat/raw/master/version.download "%cd%\versionDownload.txt" >nul
+find "%ver%" "versionDownload.txt" >nul
+if %errorlevel%==0 exit /b
+set update=Yes
+
+
 
 :setupUser
 cls
@@ -93,6 +117,7 @@ goto reset
 
 :start
 cls
+if "%update%"=="yes" call :c 02 "An update is available. Install by pressing U in main chat."
 if exist loaded.status del /f /q loaded.status
 title ITCMD FTP-CHAT    Signing In . . .
 start "" "Listener-Launcher.vbs"
