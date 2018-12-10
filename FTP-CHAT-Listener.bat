@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT Listener
-CMDS /ts "ITCMD FTP-CHAT    Signing In . . ."
+call :CMDS /ts "ITCMD FTP-CHAT    Signing In . . ."
 if %errorlevel%==1 goto tryagain
 set pid=%errorlevel%
 goto pidload
