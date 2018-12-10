@@ -1,5 +1,5 @@
 @echo off
-set ver=2.0.14
+set ver=2.0.15
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -20,7 +20,6 @@ if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/LC.exe" -saveto "%cd%\LC.exe" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
-if not exist FTPCHATListener.bat call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/Listener.bat" -saveto "%cd%\FTPCHATListener.bat" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
@@ -29,7 +28,8 @@ if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
-
+if not exist "Listener-Launcher.vbs" call :makevbs
+if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
 goto start
 ::+_++#$(#(#(#)# ??
 ::Load
@@ -93,20 +93,37 @@ goto reset
 
 :start
 cls
+if exist loaded.status del /f /q loaded.status
+title ITCMD FTP-CHAT    Signing In . . .
+start "" "Listener-Launcher.vbs"
 if exist Welcome.bat del /f /q Welcome.bat
 call :ftp "nul" "cd CHAT" "get admin/Welcome.bat"
 if not exist Welcome.bat goto offline
 call :c 08 "Running ITCMD OS Version %ver%"
 echo.
 call Welcome.bat
+call :c 0a "Logging in . . ."
+set num=0
+:startloop
+set /a num+=1
 timeout /t 3 >nul
-goto mainchat
+if exist loaded.status goto mainchat
+if %num%==10 echo Login failed. Press any key to retry . . . & pause & goto reset
+goto startloop
 
 :offline
 call :c 0c "SERVER OFFLINE!"
 pause
 exit /b
 
+
+:makevbs
+echo Dim WinScriptHost >Listener-Launcher.vbs
+echo set WinScriptHost = CreateObject("wscript.shell") >>Listener-Launcher.vbs
+echo WinScriptHost.CurrentDirectory = "%cd%" >>Listener-Launcher.vbs
+echo  WinScriptHost.Run chr(34) ^& "%cd%\FTP-CHAT-Listener.bat" ^& chr(34), 0 >>Listener-Launcher.vbs
+echo Set WinScriptHost = Nothing>>Listener-Launcher.vbs
+exit /b
 
 
 :recom
@@ -581,6 +598,8 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
 echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>00000000001.Message.06
 call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "mdelete *" "put 00000000001.Message.06"
 del /f /q Chat\*.*.*
@@ -646,6 +665,8 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
 ren code.txt %CurrMonth%%CurrDay%%hh%%min%%ss%.%usr%.code
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.%usr%.code"
 call :c 0a "Success."
@@ -657,7 +678,7 @@ title Enter "-C" to enter code. Enter "-X" to cancel.
 Batbox /c 0x%usercolor%
 set /p Msg="Message}%usr%>"
 Batbox /c 0x%defaultcolor%
-title %DefaultTitle%
+title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files
 if /i "%msg%"=="-x" goto refresh
 if /i "%msg%"=="-c" goto codeshare
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
@@ -680,6 +701,8 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
 :endstamp2
 echo %hh%:%min%:%ss%} %usr%] %msg% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
