@@ -56,6 +56,8 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
 echo %hh%:%min%:%ss%} [4m%usr% left the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
