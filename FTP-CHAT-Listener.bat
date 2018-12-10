@@ -1,4 +1,14 @@
 @echo off
+if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" exit /b
+if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" exit /b
+ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
+call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
+ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat" "ServerInfo.itcmd"
+if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
+ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
+call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
+ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
+set >test.txt.txt
 title ITCMD FTP-CHAT Listener
 call :CMDS /ts "ITCMD FTP-CHAT    Signing In . . ."
 if %errorlevel%==1 goto tryagain
@@ -16,13 +26,6 @@ goto pidload
 echo Loaded >loaded.status
 cls
 echo found on: %PID%
-ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
-call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
-ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat" "ServerInfo.itcmd"
-if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
-ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
-call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
-ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
 :looped
 tasklist /FI "PID eq %PID%" | find "No tasks are running"
 if %errorlevel%==0 goto off
@@ -53,7 +56,9 @@ for /F "skip=1 delims=" %%F in ('
         set CurrYear=%%N
     )
 )
-echo %hh%:%min%:%ss%} [4m%usr% left the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
+pause
+echo %hh%:%min%:%ss%} [4m%usr% left the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
+pause
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
 
