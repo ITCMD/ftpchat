@@ -318,7 +318,8 @@ timeout /t 3 >nul
 del /f /q "chatUPDATE.txt"
 del /f /q "update.bat"
 del /f /q "versionDownload.txt"
-if exist "chat-listener.bat" del /f /q "chat-listener.bat"
+if exist "FTP-CHAT-Listener.bat" del /f /q "FTP-CHAT-Listener.bat"
+if exist "Listener-Launcher.vbs" del /f /q "Listener-Launcher.vbs"
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
