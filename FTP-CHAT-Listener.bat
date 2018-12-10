@@ -24,6 +24,7 @@ goto pidload
 
 :pidload
 echo Loaded >loaded.status
+call :on
 cls
 echo found on: %PID%
 :looped
@@ -31,6 +32,36 @@ tasklist /FI "PID eq %PID%" | find "No tasks are running"
 if %errorlevel%==0 goto off
 timeout /t 10 >nul
 goto looped
+
+:on
+cls
+echo Sending join message
+for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
+   for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
+      set dow=%%i
+      set %%a=%%j
+      set %%b=%%k
+      set %%c=%%l
+      set hh=%%m
+      set min=%%n
+      set ss=%%o
+   )
+)
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
+echo %hh%:%min%:%ss% [32m{[]}[97m [4m%usr% joined the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
+call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f"
+del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
+exit /b
 
 
 :off
@@ -58,9 +89,10 @@ for /F "skip=1 delims=" %%F in ('
 )
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
-echo %hh%:%min%:%ss%} [4m%usr% left the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
+echo %hh%:%min%:%ss% [33m{[]}[97m [4m%usr% left the server.[0m   >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.0f
+exit /b
 
 :ftp
 set out=%~1
