@@ -597,9 +597,11 @@ exit
 :clear
 echo. 2>log
 for /f "tokens=*" %%A in (chatorder.txt) do (
-	set /p text=<"%%A"
+	echo %%A
+	set /p text=<"chat\%%A"
 	echo !text! >>log
 )
+
 call :ftp "nul" "cd CHAT" "cd log" "get log.txt"
 type log >> log.txt
 call :ftp "nul" "cd CHAT" "cd log" "put log.txt"
