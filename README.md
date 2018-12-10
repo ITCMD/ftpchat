@@ -15,7 +15,11 @@ An Advanced Chat Program written in batch
 - Online User List
 
 # What you need
-An FTP Server with no connection limit
+An FTP Server with no connection limit.
 Nothing else!
 
+# Special Thanks to
+TheBATeam (www.thebateam.org) - general help
+Bubb11/Josiah/JoJo (many names for many talents) - co designer for original chat program: https://github.com/ITCMD/chat-batch
+Lucas Elliott - thats me.
 
