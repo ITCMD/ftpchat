@@ -1,5 +1,5 @@
 @echo off
-set ver=2.0.15
+set ver=2.0.16
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -512,6 +512,91 @@ goto mainchat
 
 
 
+:bugcheck
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+    )
+)
+set CurrDay=%CurrDay:~-2%
+set /p lastday=<C:\users\Public\BugDay.txt
+if %lastday%==%currDay% goto alreadyrep
+exit /b
+
+:bug
+if exist C:\users\Public\BugDay.txt call :bugcheck
+cls
+echo Are you sure you want to report a bug? (Press Y/N)
+call :c 08 "You can only send one bug report each day."
+choice /c YN /n
+if %errorlevel%==2 goto setting
+cls
+echo What Type of Bug is it?
+echo.
+call :c 0f "1] Connection bug (Could not connect to ftp server)"
+call :c 0f "2] Option or menu bug (Program crashes when preforming a certain action)"
+call :c 0f "3] Typo or grammar mistke (Helo thar)"
+call :c 0f "4] Updator error (Problem updating)"
+call :c 0f "5] Other (Something else)"
+call :c 0f "X] Exit (cancel Bug Report)"
+choice /c 12345x /m "Press a key"
+if %errorlevel%==1 set type=1& set description=Connection bug
+if %errorlevel%==2 set type=2& set description=Option or menu bug
+if %errorlevel%==3 set type=3& set description=Typo or grammar
+if %errorlevel%==4 set type=4& set description=Updator
+if %errorlevel%==5 set type=5& set /p description="Enter Title:"
+if %errorlevel%==6 goto setting
+echo.
+call :c 0f "A New Window will open in notepad. Type in your description of the bug as well"
+call :c 0f "Enter Description (details and any links to screenshots) in the window, then " /n
+call :c 0f "close it and save it" /u
+call :c 0c "To Cancel the report enter [CANCEL] in the file somewhere and save and close."
+pause
+echo. 2>Bug-Report.txt
+notepad Bug-Report.txt
+find "[CANCEL]" "Bug-Report.txt" >nul 2>nul
+if %errorlevel%==0 del /f /q Bug-Report.txt & goto setting
+echo Prepping . . .
+set ID=%random%%random%%random%
+Set BugID=%ID%.%type%.txt
+for /f "tokens=1* delims=: " %%A in (
+  'nslookup myip.opendns.com. resolver1.opendns.com 2^>NUL^|find "Address:"'
+) Do set ExtIP=%%B
+echo Bug Report from %date% %time% by %Hostname% at %ExtIP% >%BugID%
+echo =========================================================================================== >>%BugID%
+echo Type: %type% >>%BugID%
+echo     : %Description% >>%BugID%
+echo =========================================================================================== >>%BugID%
+echo Report: >>%BugID%
+type Bug-Report.txt >>%BugID%
+echo. >>%BugID%
+echo =========================================================================================== >>%BugID%
+(echo chatbug)>ftp.inf
+(echo bug#223)>>ftp.inf
+(echo put %BugID%)>>ftp.inf
+(echo quit)>>ftp.inf
+ftp -s:ftp.inf ftp.itcommand.tech>nul
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+    )
+)
+set CurrDay=%CurrDay:~-2%
+(echo %CurrDay%)>C:\users\Public\BugDay.txt
+if not %errorlevel%==0 call :c 04 "A server error occured, report may not have been sent."
+call :c 0a "Bug Report Sent Successfuly."
+call :c 02 "Your ID: %ID%"
+echo.
+echo Press any key to close to menu . . .
+pause >nul
+goto options
+
+
+
 
 :options
 Title OPTIONS      FTP-CHAT
@@ -535,6 +620,7 @@ if %errorlevel%==7 goto clear
 if %errorlevel%==3 del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 if %errorlevel%==4 del /f /q "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" & del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 if %errorlevel%==2 goto colorchange
+if %errorlevel%==6 goto bug
 goto mainchat
 
 :muteChange
