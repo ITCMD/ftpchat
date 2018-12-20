@@ -331,7 +331,7 @@ call :c 0a "Checking for update . . ."
 call :c 08 "This Version: %ver%"
 bitsadmin /transfer myDownloadJob /download /priority High https://github.com/ITCMD/ftpchat/raw/master/version.download "%cd%\versionDownload.txt" >nul
 find "%ver%" "versionDownload.txt" >nul
-if %errorlevel%==0 call :c a0 "You are up to date." & pause & cls & goto type
+if %errorlevel%==0 call :c a0 "You are up to date." & pause & cls & goto mainchat
 set /p nv=<"versionDownload.txt"
 call :c 0f "An Update is available: %nv%"
 call :c 0f "Downloading . . ."
