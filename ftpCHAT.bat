@@ -1,11 +1,13 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.16
+set ver=2.0.17
 set defaultColor=0f
 set usercolor=0a
 set debug=false
 set CodeColor=70
 set updateDelay=7
+
+
 set Update=No
 call :c 08 "Running ITCMD OS Version %ver%"
 call :c 08 "Designed by Lucas Elliott"
@@ -15,12 +17,15 @@ if "%~1"=="antiviral" goto antiviral
 :reset
 if not exist Bin\ md Bin
 cd Bin
+set BinCD=%cd%
 if not exist "Winhttpjs.bat" call :Winhttpjs
 if not exist Chat\ md Chat\
 if not exist batbox.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/batbox.exe" -saveto "%cd%\batbox.exe" >nul
 if not exist tick.wav  call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/tick.wav" -saveto "%cd%\tick.wav" >nul
 if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/cmdwiz.exe" -saveto "%cd%\cmdwiz.exe" >nul
 if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/LC.exe" -saveto "%cd%\LC.exe" >nul
+if not exist WinSCP.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.exe" -saveto "%cd%\WinSCP.exe" >nul
+if not exist WinSCP.com call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.com" -saveto "%cd%\WinSCP.com" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
@@ -197,14 +202,14 @@ set /p ftppass="Hidden:"
 cls
 batbox /c 0x07
 echo testing . . .
-echo. 2>t.ftp
-(echo %ftpusr%
-echo %ftppass%
-echo quit)>>t.ftp
-ftp -s:t.ftp %server% >test.ftp
+echo. 2>t.ftp 1>nul
+(echo exit)>>t.ftp
+::FTPUSED
+WinSCP.com /open /script=t.ftp /ini=nul ftp://%ftpusr%:%ftppass%@%server% >test.ftp
+::ftp -s:t.ftp %server% >test.ftp
 ::del /f /q t.ftp
 del /f /q t.ftp
-find "Login failed." "test.ftp" >nul
+find "Authentication failed." "test.ftp" >nul
 if %errorlevel%==0 goto badlog
 call :c 0a "login success . . ."
 echo Testing if server is setup for chat . . .
@@ -250,7 +255,7 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do set timestamp=%%x & goto
 :endstamp1
 echo %hh%:%min%:%ss%]SERVER} Beginning of Chat >%timestamp%.chat.0a
 echo CREATED SERVER %date% %time% >log.txt
-echo. 2>54.dll
+echo. 2>54.dll 1>nul
 call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin: "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp%.chat.07" "cd .." "put 54.dll" "cd log" "put log.txt"
 del /f /q Welcome.txt
 call :c 0a "Testing if Setup was Successful"
@@ -306,19 +311,17 @@ goto setup
 :ftp
 set out=%~1
 shift
-(echo %ftpusr%)>temp.ftp
-(echo %ftppass%)>>temp.ftp
+echo. 2>temp.ftp 1>nul
 :ftploop
 if "%~1"=="" goto endftploop
 (echo %~1)>>temp.ftp
 shift
 goto ftploop
 :endftploop
-(echo quit)>>temp.ftp
-ftp -s:temp.ftp %server% >%out%
+(echo exit)>>temp.ftp
+%bincd%\WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >%out%
 del /f /q temp.ftp
 exit /b
-
 
 :update
 cd ..
@@ -361,7 +364,9 @@ if exist "Listener-Launcher.vbs" del /f /q "Listener-Launcher.vbs"
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo First Update
+echo Switched to WinSCP instead of native ftp.
+echo Fixed bugs
+echo Generally improved the thing.
 pause
 shift
 goto reset
@@ -373,7 +378,7 @@ goto reset
 :mainchat
 cls
 cd chat
-call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *"
+call :ftp "nul" "cd CHAT" "cd Chats" "mget *"
 cd ..
 dir /b Chat >chatorder.txt
 set CodeCount=0
@@ -508,12 +513,12 @@ set /p FileUpload=">"
 if /i %FileUpload%==-X goto Fileman
 if not exist "%FileUpload%" echo File Not Found. & pause & goto Upload
 call :c 0a "Uploading File . . ."
-(echo %ftpusr%)>temp.ftp
-(echo %ftppass%)>>temp.ftp
-(echo cd CHAT/Files)>>temp.ftp
+(echo cd CHAT/Files)>temp.ftp
 (echo put %FileUpload%)>>temp.ftp
-(echo quit)>>temp.ftp
-ftp -s:temp.ftp %server% >temp.output.txt
+(echo exit)>>temp.ftp
+::FTPUSED
+WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server%
+::ftp -s:temp.ftp %server% >temp.output.txt
 del /f /q temp.ftp
 find "bytes sent in" "temp.output.txt" >nul
 if not %errorlevel%==0 goto uploadfail
@@ -600,7 +605,7 @@ call :c 0f "Enter Description (details and any links to screenshots) in the wind
 call :c 0f "close it and save it" /u
 call :c 0c "To Cancel the report enter [CANCEL] in the file somewhere and save and close."
 pause
-echo. 2>Bug-Report.txt
+echo. 2>Bug-Report.txt 1>nul
 notepad Bug-Report.txt
 find "[CANCEL]" "Bug-Report.txt" >nul 2>nul
 if %errorlevel%==0 del /f /q Bug-Report.txt & goto setting
@@ -727,7 +732,7 @@ exit
 
 
 :clear
-echo. 2>log
+echo. 2>log 1>nul
 for /f "tokens=*" %%A in (chatorder.txt) do (
 	set /p text=<"chat\%%A"
 	echo !text! >>log
@@ -760,7 +765,7 @@ for /F "skip=1 delims=" %%F in ('
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
 echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>00000000001.Message.06
-call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "mdelete *" "put 00000000001.Message.06"
+call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "rm *" "put 00000000001.Message.06"
 del /f /q Chat\*.*.*
 goto mainchat
 
@@ -771,7 +776,7 @@ set tme=%time::=%
 set tme=%tme:.=%
 (echo %tme%)>%usr%
 cd chat
-call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put ..\%usr%"
+call :ftp "nul" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put ..\%usr%"
 for /f %%A in ('dir ^| find "File(s)"') do set cnt2=%%A
 cd ..
 dir /b chat >chatorder2.txt
@@ -914,7 +919,7 @@ goto wait
 
 :codeshare
 call :c 0f "A Window will open. Enter script, save it, and close it."
-echo. 2>code.txt
+echo. 2>code.txt 1>nul
 notepad code.txt
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
