@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.16
+set ver=2.0.17
 set defaultColor=0f
 set usercolor=0a
 set debug=false
