@@ -1,17 +1,15 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.17
+set ver=2.0.16
 set defaultColor=0f
 set usercolor=0a
 set debug=false
 set CodeColor=70
 set updateDelay=7
 
-
 set Update=No
 call :c 08 "Running ITCMD OS Version %ver%"
 call :c 08 "Designed by Lucas Elliott"
-if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
 setlocal EnableDelayedExpansion
 if "%~1"=="antiviral" goto antiviral
 :reset
@@ -37,6 +35,7 @@ if not exist "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" goto setupUser
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
+if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
 if not exist "Listener-Launcher.vbs" call :makevbs
 if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
 for /F "skip=1 delims=" %%F in ('
@@ -329,7 +328,7 @@ cd ..
 cls
 call :c 0a "Checking for update . . ."
 call :c 08 "This Version: %ver%"
-bitsadmin /transfer myDownloadJob /download /priority High https://github.com/ITCMD/ftpchat/raw/master/version.download "%cd%\versionDownload.txt" >nul
+call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/version.download" -saveto "%cd%\versionDownload.txt" >nul
 find "%ver%" "versionDownload.txt" >nul
 if %errorlevel%==0 call :c a0 "You are up to date." & pause & cls & cd ..& goto mainchat
 set /p nv=<"versionDownload.txt"
@@ -360,14 +359,11 @@ timeout /t 3 >nul
 del /f /q "chatUPDATE.txt"
 del /f /q "update.bat"
 del /f /q "versionDownload.txt"
-if exist "FTP-CHAT-Listener.bat" del /f /q "FTP-CHAT-Listener.bat"
-if exist "Listener-Launcher.vbs" del /f /q "Listener-Launcher.vbs"
+if exist Bin\*.* del /f /q Bin\*.*
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Switched to WinSCP instead of native ftp.
-echo Fixed bugs
-echo Generally improved the thing.
+echo First Update
 pause
 shift
 goto reset
