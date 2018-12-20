@@ -15,6 +15,7 @@ if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%use
 setlocal EnableDelayedExpansion
 if "%~1"=="antiviral" goto antiviral
 :reset
+set num=0
 if not exist Bin\ md Bin
 cd Bin
 set BinCD=%cd%
