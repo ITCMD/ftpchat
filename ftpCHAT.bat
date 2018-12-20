@@ -1,4 +1,5 @@
 @echo off
+title ITCMD FTP-CHAT    Loading . . .
 set ver=2.0.16
 set defaultColor=0f
 set usercolor=0a
@@ -6,11 +7,12 @@ set debug=false
 set CodeColor=70
 set updateDelay=7
 set Update=No
+call :c 08 "Running ITCMD OS Version %ver%"
+call :c 08 "Designed by Lucas Elliott"
 if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
 setlocal EnableDelayedExpansion
 if "%~1"=="antiviral" goto antiviral
 :reset
-color 07
 if not exist Bin\ md Bin
 cd Bin
 if not exist "Winhttpjs.bat" call :Winhttpjs
@@ -44,6 +46,8 @@ set CurrDay=%CurrDay:~-2%
 if not exist LastUpdate.txt (echo %currDay%)>LastUpdate.txt
 set /p OldDay=<LastUpdate.txt
 if not "%OldDay%"=="%CurrDay%" call :updateCheckup
+cls
+color %defaultColor%
 goto start
 ::+_++#$(#(#(#)# ??
 ::Load
@@ -60,10 +64,17 @@ set update=Yes
 
 :setupUser
 cls
+color %defaultColor%
 call :c 0a "Welcome. Please Enter a Username to use."
 call :c 08 "You can use: a-z, 0-9, @#$].~+-=_/\:;"
 set /p usr=">"
-call :c 08 "Checking if available . . ."
+Echo:%usr%|findstr /I "^[a-z0-9@#$\]\.~+\-=_\/\\:;]*$" >NUL 2>&1 && (
+	call :c 08 "Checking if available . . ."
+) || (
+   echo invalid input
+   pause
+   goto SetupUser
+)
 call :ftp "out.txt" "cd CHAT" "get 54.dll"
 find /I "%usr%Pass" "54.dll" >nul
 if %errorlevel%==0 goto login
@@ -94,6 +105,7 @@ call :c 0f "Username is in use. Enter Password or X to cancel."
 call :c 08 "Password will be hidden."
 call batbox /c 0x00
 set /p pas=">"
+if /i "%pas%"=="x" goto setupuser
 call batbox /c 0x%defaultColor%
 setlocal EnableDelayedExpansion
 find /I "%usr%pass=%pas%" "54.dll"
@@ -107,7 +119,7 @@ goto start
 
 :nope
 cls
-echo Password incorrect. %usr%Pass=%pas%
+echo Password incorrect.
 del /f /q 54.dll
 set >test.t
 Endlocal
@@ -117,6 +129,7 @@ goto reset
 
 :start
 cls
+call :c 08 "Running ITCMD OS Version %ver%"
 if "%update%"=="yes" call :c 02 "An update is available. Install by pressing U in main chat."
 if exist loaded.status del /f /q loaded.status
 title ITCMD FTP-CHAT    Signing In . . .
@@ -124,7 +137,6 @@ start "" "Listener-Launcher.vbs"
 if exist Welcome.bat del /f /q Welcome.bat
 call :ftp "nul" "cd CHAT" "get admin/Welcome.bat"
 if not exist Welcome.bat goto offline
-call :c 08 "Running ITCMD OS Version %ver%"
 echo.
 call Welcome.bat
 call :c 0a "Logging in . . ."
@@ -161,6 +173,7 @@ call :c 0f "====================================================================
 pause
 
 :setup
+color %defaultColor%
 cls
 call :c 0a "Welcome to the ITCMD FTP Chat Setup"
 call :c 08 "To access this menu once set up go to " /n
@@ -350,6 +363,7 @@ echo.
 call :c f0 "changelog:"
 echo First Update
 pause
+shift
 goto reset
 
 
@@ -380,20 +394,52 @@ for /f "tokens=*" %%A in (chatorder.txt) do (
 	cd ..
 )
 :wait
-title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files
+title ITCMD FTP-Chat by Lucas Elliott   ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online
 cd Chat
 for /f %%A in ('dir ^| find "File(s)"') do set cnt=%%A
 cd ..
-choice /c QTBUOF /d Q /t %updateDelay% /n >nul
+choice /c QTBUOFVH /d Q /t %updateDelay% /n >nul
 if %errorlevel%==1 goto refresh
 if %errorlevel%==2 goto talk
 if %errorlevel%==4 goto update
 if %errorlevel%==5 goto options
 if %errorlevel%==3 goto viewCode
 if %errorlevel%==6 goto fileman
+if %errorlevel%==7 goto onlineping
+if %errorlevel%==8 goto help
 goto wait
 
-11
+
+:onlineping
+cls
+call :c 0a "Calculating Online Users . . ."
+if not exist online\ md online
+cd online
+del /f /q * 1>nul 2>nul
+call :ftp "..\geton" "cd CHAT/Online" "prompt" "mget *"
+cd ..
+dir /b online > OnlineList
+set tme=%time::=%
+set tme=%tme:.=%
+for /f "tokens=*" %%A in (OnlineList) do (
+	set /p %%Atime=<"online\%%A"
+	if !%%Atime! GTR %tme% del /f /q online\%%A
+)
+
+dir /b online > OnlineList
+for /f "tokens=*" %%A in (OnlineList) do (
+	set /p %%Atime=<"online\%%A"
+	set /a Compare= %tme% - !%%Atime!
+	if !Compare! GTR 20000 del /f /q "online\%%A"
+)
+dir /b online > OnlineList
+cls
+call :c 0a "==== Online Users ===="
+type onlineList
+echo.
+call :c 0a "Press any key to continue . . ."
+pause >nul
+goto mainchat
 :fileman
 cls
 call :c 0f "====== File Manager 3.6 ======"
@@ -720,8 +766,10 @@ goto mainchat
 
 :refresh
 ::echo cur time into file
-del /f /q Chat\*.*.*
-(echo %time::=%)>%usr%
+del /f /q Chat
+set tme=%time::=%
+set tme=%tme:.=%
+(echo %tme%)>%usr%
 cd chat
 call :ftp "nul" "prompt" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put ..\%usr%"
 for /f %%A in ('dir ^| find "File(s)"') do set cnt2=%%A
@@ -730,6 +778,116 @@ dir /b chat >chatorder2.txt
 fc chatorder.txt chatorder2.txt >nul
 if %errorlevel%==1 goto nextrefresh
 goto wait
+
+:help6
+:help
+title ITCMD-FTP-CHAT ^| Help menu
+cls
+call :c a0 "ITCMD-FTP-CHAT: An advanced Chat program using an FTP Server"
+call :c 08 "Written by Lucas Elliott    https://github.com/ITCMD/ftpchat"
+call :c 0a "======================== Help Menu ========================"
+echo.
+call :c 0f "1] Initial Setup"
+call :c 0f "2] Server Managment"
+call :c 0f "3] Basic User Guide"
+call :c 08 "4] Back"
+choice /c 1234 /n
+if %errorlevel%==4 goto mainchat
+goto MainHelp%errorlevel%
+
+
+:MainHelp2
+cls
+call :c 0a "Servr Managment"
+echo.
+echo The FTP-CHAT program offers special managment options for server admin.
+echo You can upload mods that run when the user logs in, as well as mods for when the
+echo program refreshes, when the user quits, and you can add custom options menus.
+echo.
+echo Banning, unbanning and creating admins is done through the ftp-server. Admin users
+echo are users who have signed into the ftp server with an account that can access the mods
+echo and admin folder. For more information on that view the "recommended ftp server settings"
+echo in the setup menu (To access this you must be signed out of any ftp servers).
+call :c 08 "Press any key to exit . . ."
+pause >nul
+goto help
+
+
+:MainHelp3
+cls
+call :c 0a "User Guide"
+echo.
+echo 1] Talking and sending messages
+echo 2] Sharing codes and scripts
+echo 3] Uploading and downloading files
+echo 4] Viewing online users
+echo 5] Updating
+call :c 08 "6] Back"
+choice /c 123456
+goto Help%errorlevel%
+
+
+
+
+
+:help1
+cls
+call :c 0a "Talking and sending messages"
+echo.
+echo Once the 
+
+
+
+:mainHelp1
+cls
+call :c 0a "Initial Setup:"
+echo.
+call :c 0f "1] Setting up an FTP-Server"
+call :c 0f "2] Setting up the FTP-Chat Program"
+call :c 08 "3] Back"
+choice /c 123 /n
+if %errorlevel%==3 goto help
+goto SetupHelp%errorlevel%
+
+
+:SetupHelp2
+cls
+call :c 0a "Setting up the chat program"
+echo.
+echo Once you have set up an ftp server, setting up the chat program is fairly easy.
+echo The initial setup requires you to have the ftp server address (you can also enter an ip address),
+echo a username, and a password. The account you provide if setting up the chat-server must have full
+echo read and write access to any folder you would like. It will create a new folder called "CHAT" and
+echo set up everything in there. 
+call :c 0c "Error Handling:"
+echo If the setup fails, there can be numerous causes. The most common is incorrect permissions. Make
+echo sure the user you provide can read/write/cd up and down/modify/overwrite/delete.
+echo Another common cause is if you are running the ftp server off a flash drive. It may not let the user
+echo log in correctly when set up this way. To test this, try logging in with your ftp client and see if
+echo you can upload/download files.
+echo IF neither of those solutions work, try asking around online on places like stack exchange.
+call :c 08 "Press any key to exit . . ."
+pause >nul
+goto mainhelp1
+
+:setuphelp1
+cls
+call :c 0a "Setting up an FTP Server"
+echo.
+echo There are many ways to set up an ftp server. For the purposes of a chat server,
+echo we recommend getting a raspberry pi, running raspbian, and installing Gadmin Proftpd.
+echo You can also use Filezilla on windows devices. The server simply needs to have the ability to have
+echo two users with different restrictions and seperate permissions for different folders.
+echo Make sure you are not limited to a certain amount of connections per day (as some hosts do this),
+echo the chat program connects every 15 or so seconds for each user.
+echo.
+echo Note that new users to your chat-server do NOT need a new ftp account. Usernames and passwords
+echo are handled within the program.
+call :c 08 "Press any key to exit . . ."
+pause >nul
+goto mainhelp1
+
+
 
 :nextrefresh
 if not exist "C:\users\%username%\Appdata\FTPChat\Mute" cmdwiz playsound tick.wav
@@ -791,7 +949,7 @@ title Enter "-C" to enter code. Enter "-X" to cancel.
 Batbox /c 0x%usercolor%
 set /p Msg="Message}%usr%>"
 Batbox /c 0x%defaultcolor%
-title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files
+title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online
 if /i "%msg%"=="-x" goto refresh
 if /i "%msg%"=="-c" goto codeshare
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
