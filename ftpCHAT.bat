@@ -377,7 +377,13 @@ if exist Bin\*.* del /f /q Bin\*.*
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo First Update
+echo Switched from FTP.exe to WinSCP.com for ftp communication
+echo Updated File Managaer
+echo Fixed some bugs
+echo Added Bug Report System.
+call :c f0 "Coming Soon:"
+echo Mods manager and mod support
+echo More Stuff
 pause
 shift
 goto reset
