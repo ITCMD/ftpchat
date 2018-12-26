@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.17
+set ver=2.0.18
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -64,7 +64,7 @@ bitsadmin /transfer myDownloadJob /download /priority Low https://github.com/ITC
 find "%ver%" "versionDownload.txt" >nul
 if %errorlevel%==0 exit /b
 set update=Yes
-
+exit /b
 
 
 :setupUser
@@ -140,7 +140,7 @@ if exist loaded.status del /f /q loaded.status
 title ITCMD FTP-CHAT    Signing In . . .
 start "" "Listener-Launcher.vbs"
 if exist Welcome.bat del /f /q Welcome.bat
-call :ftp "nul" "cd CHAT" "get admin/Welcome.bat"
+call :ftp "getWelcome.txt" "cd CHAT" "get admin/Welcome.bat"
 if not exist Welcome.bat goto offline
 echo.
 call Welcome.bat
@@ -319,8 +319,22 @@ shift
 goto ftploop
 :endftploop
 (echo exit)>>temp.ftp
-%bincd%\WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >%out%
+echo Set oShell = CreateObject ("Wscript.Shell") >WinSCP.vbs
+echo Dim strArgs>>WinSCP.vbs
+(
+echo strArgs = "cmd.exe /c """"%bincd%\winscp.com"" /ini=nul /script=""%cd%\temp.ftp"" ftp://%ftpusr%:%ftppass%@%server%"" >%out%"
+)>>WinSCP.vbs
+echo oShell.Run strArgs, 0, true>>WinSCP.vbs
+cscript WinSCP.vbs >VBResult
+if %errorlevel%==0 (
+	del /f /q VBResult
+) ELSE (
+	echo %time% %date% >> VBResult
+	ren VBResult VBS-Error-%random%.txt
+)
+::"%bincd%\WinSCP.com" /open /ini=nul /script=temp.ftp  >%out%
 del /f /q temp.ftp
+del /f /q WinSCP.vbs
 exit /b
 
 :update
@@ -328,7 +342,7 @@ cd ..
 cls
 call :c 0a "Checking for update . . ."
 call :c 08 "This Version: %ver%"
-call Bin\winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/version.download" -saveto "%cd%\versionDownload.txt" >nul
+call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/version.download" -saveto "%cd%\versionDownload.txt" >nul
 find "%ver%" "versionDownload.txt" >nul
 if %errorlevel%==0 call :c a0 "You are up to date." & pause & cls & cd ..& goto mainchat
 set /p nv=<"versionDownload.txt"
@@ -455,26 +469,33 @@ if %errorlevel%==1 goto upload
 cls
 call :c 0f "====== File Manager 3.6 ======"
 call :ftp "FileListBase.txt" "cd CHAT/Files" "ls"
+
 for /F "delims=" %%j in (FileListBase.txt) do (
   set /A count+=1
 )
+
+
 set /a count-=3
 set count2=0
 echo. 2>FileList.txt 1>nul
+
 for /F "delims=" %%j in (FileListBase.txt) do (
   set /A count2+=1
   if !count2!==!count! goto eo
   (echo %%j)>>FileList.txt
 )
+
+
 :eo
 call :c 0a "Please select a file to open."
 del /f /q FileListBase.txt
 set Files=0
-for /f "tokens=* skip=11" %%A in (FileList.txt) do (
+for /f "tokens=1,2,3,4,5,6,7,8,9* skip=8 delims= " %%a in (FileList.txt) do (
 	set /a Files+=1
-	set File!Files!=%%A
-	call :c 0f "!Files!] %%A"
+	set File!Files!=%%j
+	call :c 0f "!Files!] %%j"
 )
+
 call :c 08 "Enter -X to Exit"
 set /p fcho=">"
 if /i "%fcho%"=="-x" goto fileman
@@ -514,7 +535,7 @@ call :c 0a "Uploading File . . ."
 (echo put %FileUpload%)>>temp.ftp
 (echo exit)>>temp.ftp
 ::FTPUSED
-WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server%
+WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >temp.output.txt
 ::ftp -s:temp.ftp %server% >temp.output.txt
 del /f /q temp.ftp
 find "bytes sent in" "temp.output.txt" >nul
@@ -729,6 +750,7 @@ exit
 
 
 :clear
+call :c 0c "Clearing Chat . . ." /u
 echo. 2>log 1>nul
 for /f "tokens=*" %%A in (chatorder.txt) do (
 	set /p text=<"chat\%%A"
@@ -762,11 +784,12 @@ for /F "skip=1 delims=" %%F in ('
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
 echo %hh%:%min%:%ss%} SERVER] Chat Cleared.>00000000001.Message.06
-call :ftp "nul" "cd CHAT" "prompt" "cd Chats" "rm *" "put 00000000001.Message.06"
+call :ftp "nul" "cd CHAT" "cd Chats" "rm *" "put 00000000001.Message.06"
 del /f /q Chat\*.*.*
 goto mainchat
 
 :refresh
+title ITCMD FTP-Chat by Lucas Elliott   ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online    *
 ::echo cur time into file
 del /f /q Chat
 set tme=%time::=%
