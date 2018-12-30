@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.20
+set ver=2.0.21
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -462,7 +462,7 @@ del /f /q "versionDownload.txt"
 if exist Bin\*.* del /f /q Bin\*.*
 call :c 08 "Cleanup complete."
 echo.
-call :c f0 "changelog:"
+call :c f0 "Changelog:"
 echo Switched from FTP.exe to WinSCP.com for ftp communication
 echo Updated File Managaer
 echo Fixed some bugs
@@ -646,14 +646,14 @@ set Num=%errorlevel%
 :LoadCode
 call :c 0a "Displaying Code . . ."
 batbox /c 0x02
-type !Code%Num%!
+type Chat\!Code%Num%!
 echo.
 batbox /c 0x%defaultColor%
 call :c 0f "Would you like to copy that code to your clipboard?"
 choice /c yn
 if %errorlevel%==2 goto mainchat
 call :c 0a "Copying to clipboard . . ."
-clip < !Code%Num%!
+clip < Chat\!Code%Num%!
 call :c 0a "Success."
 pause
 goto mainchat
