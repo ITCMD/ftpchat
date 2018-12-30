@@ -61,7 +61,7 @@ for /F "skip=1 delims=" %%F in ('
 )
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
-echo %hh%:%min% [32m+[90mLukaka >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
+echo %hh%:%min% [32m+[90m%usr% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
 exit /b
@@ -92,7 +92,7 @@ for /F "skip=1 delims=" %%F in ('
 )
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
-echo %hh%:%min% [31m-[90mLukaka >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
+echo %hh%:%min% [31m-[90m%usr% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.08
 exit
