@@ -65,6 +65,7 @@ if not exist WinSCP.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist WinSCP.com call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.com" -saveto "%cd%\WinSCP.com" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
+if "%~1"=="updatedSetup" goto cleanupdateSetup
 if not exist "Listener-Launcher.vbs" call :makevbs
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
@@ -208,6 +209,53 @@ echo  WinScriptHost.Run chr(34) ^& "%cd%\FTP-CHAT-Listener.bat" ^& chr(34), 0 >>
 echo Set WinScriptHost = Nothing>>Listener-Launcher.vbs
 exit /b
 
+:updatecheck2
+cd ..
+cls
+call :c 0a "Checking for update . . ."
+call :c 08 "This Version: %ver%"
+call %bincd%\winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/version.download" -saveto "%cd%\versionDownload.txt" >nul
+find "%ver%" "versionDownload.txt" >nul
+if %errorlevel%==0 call :c a0 "You are up to date." & exit /b
+set /p nv=<"versionDownload.txt"
+call :c 0f "An Update is available: %nv%"
+call :c 0f "Downloading . . ."
+bitsadmin /transfer myDownloadJob /download /priority High https://raw.githubusercontent.com/ITCMD/ftpchat/master/ftpCHAT.bat "%cd%\chatUPDATE.txt" >nul
+call :c 08 "Checking Notification Updates . . ."
+call :c 08 "Installing . . ."
+echo @echo off >update.bat
+(echo title Update Installer . . .
+echo color 0a
+echo echo Installing Update . . .
+echo Program will restart . . .
+timeout /t 3 >nul
+echo if not exist chatUPDATE.txt echo ERROR ^&pause ^&exit /b
+echo copy /b/v/y "chatUPDATE.txt" "%~nx0" ^>nul
+echo start "" "%~nx0" updatedSetup
+echo timeout /t 2 ^>nul
+echo exit)>>update.bat
+start "" "update.bat"
+exit 
+
+
+:cleanupdateSetup
+cls
+cd..
+call :c a0 "Update Installed."
+call :c 08 "Cleaning up . . ."
+timeout /t 3 >nul
+del /f /q "chatUPDATE.txt"
+del /f /q "update.bat"
+del /f /q "versionDownload.txt"
+if exist Bin\*.* del /f /q Bin\*.*
+call :c 08 "Cleanup complete."
+echo.
+echo Continuing Setup . . .
+timeout /t 3 >nul
+shift
+goto reset
+
+
 
 :recom
 cls
@@ -229,8 +277,10 @@ call :c 08 "Setup" /u
 echo.
 echo 1] Recommended FTP Server settings (please view if new!).
 echo 2] Begin Setup
-choice /c 12
+echo 3] Setup without checking for updates (Not Recommended)
+choice /c 123
 if %errorlevel%==1 goto recom
+if %errorlevel%==2 call :updateCheck2
 call :c 0f "Please Enter an ftp server" /n
 call :c 08 "  e.g. ftp.server.com"
 set /p server=">"
