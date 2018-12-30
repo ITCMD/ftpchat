@@ -533,7 +533,6 @@ for /f "tokens=*" %%A in (OnlineList) do (
 	set /p %%Atime=<"online\%%A"
 	if !%%Atime! GTR %tme% del /f /q online\%%A
 )
-
 dir /b online > OnlineList
 for /f "tokens=*" %%A in (OnlineList) do (
 	set /p %%Atime=<"online\%%A"
@@ -1057,7 +1056,7 @@ set tme=%time::=%
 set tme=%tme:.=%
 (echo %tme%)>%usr%
 cd chat
-call :ftp "nul" "cd CHAT" "cd Chats" "mget *" "cd .." "cd Online" "put ..\%usr%"
+call :ftp "..\Refresh.txt" "cd CHAT" "cd Chats" "get *" "cd .." "cd Online" "rm %usr%" "put ..\%usr%"
 for /f %%A in ('dir ^| find "File(s)"') do set cnt2=%%A
 cd ..
 dir /b chat >chatorder2.txt
