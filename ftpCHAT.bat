@@ -192,7 +192,10 @@ if %num%==10 echo Login failed. Press any key to retry . . . & pause & goto rese
 goto startloop
 
 :offline
-call :c 0c "SERVER OFFLINE!"
+call :c 0c "COULD NOT CONNECT"
+echo The Server is offline or unconnectable for another reason.
+echo.
+type "getWelcome.txt"
 pause
 exit /b
 
@@ -415,7 +418,10 @@ if exist Bin\*.* del /f /q Bin\*.*
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Fixed some annoying stuff
+echo Switched from FTP.exe to WinSCP.com for ftp communication
+echo Updated File Managaer
+echo Fixed some bugs
+echo Added Bug Report System.
 call :c f0 "Coming Soon:"
 echo Mods manager and mod support
 echo More Stuff
