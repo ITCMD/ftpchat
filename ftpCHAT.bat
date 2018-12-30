@@ -552,6 +552,8 @@ echo.
 call :c 0a "Press any key to continue . . ."
 pause >nul
 goto mainchat
+
+
 :fileman
 cls
 call :c 0f "====== File Manager 3.7 ======"
@@ -564,27 +566,12 @@ if %errorlevel%==1 goto upload
 :viewFiles
 cls
 call :c 0f "====== File Manager 3.7 ======"
-call :ftp "FileListBase.txt" "cd CHAT/Files" "ls"
-
-for /F "delims=" %%j in (FileListBase.txt) do (
-  set /A count+=1
-)
-
-
-set /a count-=3
-set count2=0
-echo. 2>FileList.txt 1>nul
-
-for /F "delims=" %%j in (FileListBase.txt) do (
-  set /A count2+=1
-  if !count2!==!count! goto eo
-  (echo %%j)>>FileList.txt
-)
+call :ftp "FileList.txt" "cd CHAT/Files" "ls"
 
 
 :eo
 call :c 0a "Please select a file to open."
-del /f /q FileListBase.txt
+::del /f /q FileListBase.txt
 set Files=0
 for /f "tokens=1,2,3,4,5,6,7,8,9* skip=8 delims= " %%a in (FileList.txt) do (
 	set /a Files+=1
@@ -606,11 +593,13 @@ call :c 07 "Download Complete."
 call :c 0a "Would You like to scan this file with Windows Defender?"
 choice 
 if %errorlevel%==1 (
-	cd ..\Files
-	call :scan "%cd%\!File%fcho%!"
-	cd ..\Bin
+	cd ..
+	cd Files
+	call :scan "!cd!\!File%fcho%!"
+	cd ..
+	cd Bin
 )
-call :c 0a "Opening File . . ."
+call :c 0a "Opening File Location. . ."
 timeout /t 2 >nul
 explorer /select,"..\Files\!File%fcho%!"
 pause
@@ -624,7 +613,6 @@ echo.
 call :c 0a "Choose File"
 for /f "tokens=*" %%A in ('call File-Choser.bat') do (set FileUpload=%%~A)
 if "%FileUpload%"=="" goto fileman
-if "%FileUpload%"==" " goto fileman
 if not exist "%FileUpload%" echo File Not Found. & pause & goto Upload
 call :c 0a "Uploading File . . ."
 (echo cd CHAT/Files)>temp.ftp
@@ -634,7 +622,7 @@ call :c 0a "Uploading File . . ."
 WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >temp.output.txt
 ::ftp -s:temp.ftp %server% >temp.output.txt
 del /f /q temp.ftp
-find "bytes sent in" "temp.output.txt" >nul
+find "100%%" "temp.output.txt" >nul
 if not %errorlevel%==0 goto uploadfail
 del /f /q temp.output.txt
 call :c 0a "Upload Successful."
