@@ -10,7 +10,6 @@ set updateDelay=7
 for /f "delims=" %%a in ('wmic OS Get localdatetime ^| find "."') do set dt=%%a
 set month=%dt:~4,2%
 set Todaysday=%dt:~6,2%
-set Todaysday=31
 if %month%==01 set monthname=Jan
 if %month%==02 set monthname=Feb
 if %month%==03 set monthname=Mar
