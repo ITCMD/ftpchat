@@ -128,19 +128,15 @@ call :C 0f "Re-enter password to verify"
 set /p pas2=">"
 if not "%pas%"=="%pas2%" echo Does not match & pause & goto setupUser
 call :C 0a "Great. Saving . . ."
-call :ftp "nul" "cd CHAT" "get 54.dll"
+call :ftp "up54" "cd CHAT" "get 54.dll"
 (echo set %Usr%Pass=%pas%)>>54.dll
-pause
-call :ftp "nul" "cd CHAT" "put 54.dll"
+call :ftp "tempout.txt" "cd CHAT" "rm 54.dll" "put 54.dll"
+(echo set usr=%usr%)>"C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd"
 del /f /q 54.dll
-call :c 0a "Logging in" /n
-timeout /t 1 >nul
-call :c 0a " ." /n
-timeout /t 1 >nul
-call :c 0a " ." /n
-timeout /t 1 >nul
-call :c 0a " ." /n
-goto start
+call :C 0a "Restarting . . ."
+timeout /t 2 >nul
+start "" "%~0"
+exit
 
 :login
 cls
@@ -156,9 +152,9 @@ if not %errorlevel%==0 goto nope
 del /f /q 54.dll
 Endlocal
 (echo set usr=%usr%)>"C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd"
-call :C 0a "Logging in . . ."
-cls
-goto start
+call :C 0a "Restarting . . ."
+start "" "%~0"
+exit
 
 :nope
 cls
@@ -188,7 +184,7 @@ set num=0
 set /a num+=1
 timeout /t 3 >nul
 if exist loaded.status goto mainchat
-if %num%==10 echo Login failed. Press any key to retry . . . & pause & goto reset
+if %num%==10 echo Login failed. Press any key to retry . . . & pause & cd .. & goto reset
 goto startloop
 
 :offline
