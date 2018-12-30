@@ -621,14 +621,14 @@ goto mainchat
 cls
 call :c 0f "====== File Manager 3.7 ======"
 echo.
-call :c 0a "Drag and Drop File Onto Screen."
-call :c 08 "Or Enter Path Manually. Enter -X to cancel."
-set /p FileUpload=">"
-if /i %FileUpload%==-X goto Fileman
+call :c 0a "Choose File"
+for /f "tokens=*" %%A in ('call File-Choser.bat') do (set FileUpload=%%~A)
+if "%FileUpload%"=="" goto fileman
+if "%FileUpload%"==" " goto fileman
 if not exist "%FileUpload%" echo File Not Found. & pause & goto Upload
 call :c 0a "Uploading File . . ."
 (echo cd CHAT/Files)>temp.ftp
-(echo put %FileUpload%)>>temp.ftp
+(echo put "%FileUpload%")>>temp.ftp
 (echo exit)>>temp.ftp
 ::FTPUSED
 WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >temp.output.txt
