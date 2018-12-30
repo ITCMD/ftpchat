@@ -63,6 +63,7 @@ if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/LC.exe" -saveto "%cd%\LC.exe" >nul
 if not exist WinSCP.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.exe" -saveto "%cd%\WinSCP.exe" >nul
 if not exist WinSCP.com call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.com" -saveto "%cd%\WinSCP.com" >nul
+if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
 if "%~1"=="updatedSetup" goto cleanupdateSetup
@@ -76,7 +77,6 @@ ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
 if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
-if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
 for /F "skip=1 delims=" %%F in ('
     wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
 ') do (
