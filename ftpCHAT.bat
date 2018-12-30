@@ -1,15 +1,28 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.18
+set ver=2.0.19
 set defaultColor=0f
 set usercolor=0a
 set debug=false
 set CodeColor=70
 set updateDelay=7
-set month-num=%date:~3,2%
-  REM Set month Name to mo-name.
-IF "%month-num:~0,1%"=="0" SET month-num=%month-num:~1%
-FOR /f "tokens=%month-num%" %%a in ("jan feb mar apr may jun jul aug sep oct nov dec") do set mo-name=%%a
+  REM Set month Name to mo-name. 
+for /f "delims=" %%a in ('wmic OS Get localdatetime ^| find "."') do set dt=%%a
+set month=%dt:~4,2%
+set Todaysday=%dt:~6,2%
+set Todaysday=31
+if %month%==01 set monthname=Jan
+if %month%==02 set monthname=Feb
+if %month%==03 set monthname=Mar
+if %month%==04 set monthname=Apr
+if %month%==05 set monthname=May
+if %month%==06 set monthname=Jun
+if %month%==07 set monthname=Jul
+if %month%==08 set monthname=Aug
+if %month%==09 set monthname=Sep
+if %month%==10 set monthname=Oct
+if %month%==11 set monthname=Nov
+if %month%==12 set monthname=Dec
 set Update=No
 call :c 08 "Running ITCMD OS Version %ver%"
 call :c 08 "Designed by Lucas Elliott"
@@ -52,6 +65,7 @@ if not exist WinSCP.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORA
 if not exist WinSCP.com call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.com" -saveto "%cd%\WinSCP.com" >nul
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
+if not exist "Listener-Launcher.vbs" call :makevbs
 if not exist "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" goto setup
 ren "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" "ServerInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.bat"
@@ -61,7 +75,6 @@ ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" "UserInfo.bat"
 call "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat"
 ren "C:\users\%username%\Appdata\FTPCHAT\UserInfo.bat" "UserInfo.itcmd"
 if exist "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd" call "C:\users\%username%\Appdata\FTPCHAT\UserColor.cmd"
-if not exist "Listener-Launcher.vbs" call :makevbs
 if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
 for /F "skip=1 delims=" %%F in ('
     wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
@@ -402,10 +415,7 @@ if exist Bin\*.* del /f /q Bin\*.*
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Switched from FTP.exe to WinSCP.com for ftp communication
-echo Updated File Managaer
-echo Fixed some bugs
-echo Added Bug Report System.
+echo Fixed some annoying stuff
 call :c f0 "Coming Soon:"
 echo Mods manager and mod support
 echo More Stuff
@@ -1189,6 +1199,7 @@ Batbox /c 0x%defaultcolor%
 title ITCMD FTP-Chat by Lucas Elliott ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online
 if /i "%msg%"=="-x" goto refresh
 if /i "%msg%"=="-c" goto codeshare
+	
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
       set dow=%%i
@@ -1211,7 +1222,17 @@ for /F "skip=1 delims=" %%F in ('
 )
 set CurrMonth=%CurrMonth:~-2%
 set CurrDay=%CurrDay:~-2%
-:endstamp2
+if not defined datedone (
+	call :ftp "TestDate" "cd CHAT/Chats" "ls"
+	find /i "%monthname% %Todaysday%" "TestDate" >nul
+	if not !errorlevel!==0 (
+		echo %monthname%/%Todaysday% >%CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08"
+		del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		set datedone=Yeah Baby
+	)
+)
+set /a ss+=1
 echo %hh%:%min%:%ss%} %usr%] %msg% >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
