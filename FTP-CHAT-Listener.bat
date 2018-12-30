@@ -100,30 +100,30 @@ exit
 :ftp
 set out=%~1
 shift
-echo. 2>temp.ftp 1>nul
+echo. 2>temp2.ftp 1>nul
 :ftploop
 if "%~1"=="" goto endftploop
-(echo %~1)>>temp.ftp
+(echo %~1)>>temp2.ftp
 shift
 goto ftploop
 :endftploop
-(echo exit)>>temp.ftp
-echo Set oShell = CreateObject ("Wscript.Shell") >WinSCP.vbs
-echo Dim strArgs>>WinSCP.vbs
+(echo exit)>>temp2.ftp
+echo Set oShell = CreateObject ("Wscript.Shell") >WinSCP2.vbs
+echo Dim strArgs>>WinSCP2.vbs
 (
-echo strArgs = "cmd.exe /c """"%bincd%\winscp.com"" /ini=nul /script=""%cd%\temp.ftp"" ftp://%ftpusr%:%ftppass%@%server%"" >%out%"
-)>>WinSCP.vbs
-echo oShell.Run strArgs, 0, true>>WinSCP.vbs
-cscript WinSCP.vbs >VBResult
+echo strArgs = "cmd.exe /c """"%bincd%\winscp.com"" /ini=nul /script=""%cd%\temp2.ftp"" ftp://%ftpusr%:%ftppass%@%server%"" >%out%"
+)>>WinSCP2.vbs
+echo oShell.Run strArgs, 0, true>>WinSCP2.vbs
+cscript WinSCP2.vbs >VBResult
 if %errorlevel%==0 (
 	del /f /q VBResult
 ) ELSE (
 	echo %time% %date% >> VBResult
 	ren VBResult VBS-Error-%random%.txt
 )
-::"%bincd%\WinSCP.com" /open /ini=nul /script=temp.ftp  >%out%
-del /f /q temp.ftp
-del /f /q WinSCP.vbs
+::"%bincd%\WinSCP.com" /open /ini=nul /script=temp2.ftp  >%out%
+del /f /q temp2.ftp
+del /f /q WinSCP2.vbs
 exit /b
 
 
