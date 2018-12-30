@@ -6,7 +6,10 @@ set usercolor=0a
 set debug=false
 set CodeColor=70
 set updateDelay=7
-
+set month-num=%date:~3,2%
+  REM Set month Name to mo-name.
+IF "%month-num:~0,1%"=="0" SET month-num=%month-num:~1%
+FOR /f "tokens=%month-num%" %%a in ("jan feb mar apr may jun jul aug sep oct nov dec") do set mo-name=%%a
 set Update=No
 call :c 08 "Running ITCMD OS Version %ver%"
 call :c 08 "Designed by Lucas Elliott"
@@ -19,6 +22,28 @@ cd Bin
 set BinCD=%cd%
 if not exist "Winhttpjs.bat" call :Winhttpjs
 if not exist Chat\ md Chat\
+if exist "File-Choser.bat" goto 158751694420607195801573528324 
+(echo -----BEGIN CERTIFICATE-----)>temp.txt 
+( 
+echo PCMgOiBjaG9vc2VyLmJhdA0KOjogbGF1bmNoZXMgYSBGaWxlLi4uIE9wZW4gc29y 
+echo dCBvZiBmaWxlIGNob29zZXIgYW5kIG91dHB1dHMgY2hvaWNlKHMpIHRvIHRoZSBj 
+echo b25zb2xlDQo6OiBodHRwczovL3N0YWNrb3ZlcmZsb3cuY29tL2EvMTU4ODUxMzMv 
+echo MTY4MzI2NA0KDQpAZWNobyBvZmYNCnNldGxvY2FsDQoNCmZvciAvZiAiZGVsaW1z 
+echo PSIgJSVJIGluICgncG93ZXJzaGVsbCAtbm9wcm9maWxlICJpZXggKCR7JX5mMH0g 
+echo fCBvdXQtc3RyaW5nKSInKSBkbyAoDQogICAgZWNobyAlJX5JDQopDQpnb3RvIDpF 
+echo T0YNCg0KOiBlbmQgQmF0Y2ggcG9ydGlvbiAvIGJlZ2luIFBvd2VyU2hlbGwgaHli 
+echo cmlkIGNoaW1lcmEgIz4NCg0KQWRkLVR5cGUgLUFzc2VtYmx5TmFtZSBTeXN0ZW0u 
+echo V2luZG93cy5Gb3Jtcw0KJGYgPSBuZXctb2JqZWN0IFdpbmRvd3MuRm9ybXMuT3Bl 
+echo bkZpbGVEaWFsb2cNCiRmLkluaXRpYWxEaXJlY3RvcnkgPSBwd2QNCiRmLkZpbHRl 
+echo ciA9ICJUZXh0IEZpbGVzICgqLnR4dCl8Ki50eHR8QWxsIEZpbGVzICgqLiopfCou 
+echo KiINCiRmLlNob3dIZWxwID0gJHRydWUNCiRmLk11bHRpc2VsZWN0ID0gJHRydWUN 
+echo Clt2b2lkXSRmLlNob3dEaWFsb2coKQ0KaWYgKCRmLk11bHRpc2VsZWN0KSB7ICRm 
+echo LkZpbGVOYW1lcyB9IGVsc2UgeyAkZi5GaWxlTmFtZSB9 
+echo -----END CERTIFICATE----- 
+)>>temp.txt 
+certutil -decode "temp.txt" "File-Choser.bat" >nul 
+del /f /q "temp.txt" 
+:158751694420607195801573528324 
 if not exist batbox.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/batbox.exe" -saveto "%cd%\batbox.exe" >nul
 if not exist tick.wav  call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/tick.wav" -saveto "%cd%\tick.wav" >nul
 if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/cmdwiz.exe" -saveto "%cd%\cmdwiz.exe" >nul
@@ -438,7 +463,7 @@ call :c 0a "Calculating Online Users . . ."
 if not exist online\ md online
 cd online
 del /f /q * 1>nul 2>nul
-call :ftp "..\geton" "cd CHAT/Online" "prompt" "mget *"
+call :ftp "..\geton" "cd CHAT/Online" "get *"
 cd ..
 dir /b online > OnlineList
 set tme=%time::=%
@@ -464,7 +489,7 @@ pause >nul
 goto mainchat
 :fileman
 cls
-call :c 0f "====== File Manager 3.6 ======"
+call :c 0f "====== File Manager 3.7 ======"
 call :c 0a "1] Upload a file"
 call :c 0a "2] View files"
 call :c 02 "X] Go Back"
@@ -473,7 +498,7 @@ if %errorlevel%==3 goto mainchat
 if %errorlevel%==1 goto upload
 :viewFiles
 cls
-call :c 0f "====== File Manager 3.6 ======"
+call :c 0f "====== File Manager 3.7 ======"
 call :ftp "FileListBase.txt" "cd CHAT/Files" "ls"
 
 for /F "delims=" %%j in (FileListBase.txt) do (
@@ -529,7 +554,7 @@ goto mainchat
 
 :Upload
 cls
-call :c 0f "====== File Manager 3.6 ======"
+call :c 0f "====== File Manager 3.7 ======"
 echo.
 call :c 0a "Drag and Drop File Onto Screen."
 call :c 08 "Or Enter Path Manually. Enter -X to cancel."
@@ -687,21 +712,202 @@ call :c 0f "4] Log Out Server"
 call :c 0f "5] View Log" 
 call :c 0f "6] Report Bugs"
 call :c 0f "7] Clear Chat"
-call :c 08 "8] Exit"
-choice /c "12345678"
+call :c 0f "8] Mod Manager"
+call :c 08 "9] Exit"
+choice /c "123456789"
 if %errorlevel%==1 call :muteChange
-if %errorlevel%==8 goto mainchat
+if %errorlevel%==9 goto mainchat
 if %errorlevel%==7 goto clear
 if %errorlevel%==3 del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 if %errorlevel%==4 del /f /q "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" & del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 if %errorlevel%==2 goto colorchange
 if %errorlevel%==6 goto bug
+if %errorlevel%==8 goto mods
 goto mainchat
 
 :muteChange
 if exist "C:\users\%username%\Appdata\FTPCHAT\Mute" del /f /q "C:\users\%username%\Appdata\FTPCHAT\Mute" & exit /b
 if not exist "C:\users\%username%\Appdata\FTPCHAT\Mute" echo. > "C:\users\%username%\Appdata\FTPCHAT\Mute"
 exit /b
+
+
+
+:mods
+cls
+color 0d
+call :c d0 "======== Mod Manager Version 1.3 ========"
+echo.
+echo 1] Install/Uninstall a Client Mod
+echo 2] Install/Uninstall a Server Mod
+echo 3] List Client Mods
+echo 4] List Server Mods
+call :c 05 "X] Exit"
+echo.
+choice /c 1234x
+if %errorlevel%==5 color %defaultColor% & goto mainchat
+goto mod%errorlevel%
+
+
+
+
+:mod2
+cls
+call :c d0 "======== Mod Manager Version 1.3 ========"
+call :c 0d "Checking Permission . . ."
+echo. >TestUpload.txt
+call :ftp "TestPerm" "option Batch continue" "cd CHAT/mods" "put TestUpload.txt" "rm TestUpload.txt"
+timeout /t 2 >nul
+find "100%%" "TestPerm" >nul
+if %errorlevel%==0 (
+	call :c 0a "Permission Granted."
+) ELSE (
+	call :c 0c "Permission Denied. Log in with FTP user with access to mods."
+	pause
+	goto mods
+)
+echo 1] Add a Server Mod
+echo 2] Remove a Server Mod
+call :c 05 "X] Back]"
+choice /c 12x
+if %errorlevel%==3 goto options
+if %errorlevel%==2 goto RemServ
+if %errorlevel%==1 goto AddServ
+
+:AddServ
+cls
+echo Select the mod you wish to upload.
+for /f "tokens=*" %%A in ('call File-Choser.bat') do (set CFile=%%~A)
+if not exist "%CFile%" echo FILE NOT FOUND & pause & goto mods
+echo Scanning Mod . . .
+call :c 0f "This Mod Will get access to:"
+find /i "%%ftppass%%" "%CFile%" >nul
+if %errorlevel%==0 echo The Login details for your FTP Server
+find /i "copy" "%CFile%" >nul
+if %errorlevel%==0 echo Copying files on your computer
+find /i "Winhhtpjs" "%CFile%" >nul
+if %errorlevel%==0 echo Downloading files from the internet
+find /i "Bitsadmin" "%CFile% >nul
+if %errorlevel%==0 echo Downloading files from the internet (using BitsAdmin)
+find "certutil" "%CFile%" >nul
+if %errorlevel%==0 echo Some of this file cannot be scanned as it is condenced.
+echo.
+call :c 0c "It will run for every user connected to your server!"
+call :c 0c "Only install mods from sources you trust." 
+goto mod1
+echo Are you sure you want to install this mod?
+choice /c YN
+if %errorlevel%==2 goto mods
+call :c 0a "Installing . . ."
+if not exist Mods\ md Mods\Startup & md Mods\Refresh & md Mods\Options & md Mods\Join & md Mods\Leave
+find "::[OnStartup]" "%CFile%" >nul
+if %errorlevel%==0 call :ftp "nul" "put '%CFILE%' & goto endmod
+find "::[OnRefresh]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Refresh\" & goto endmod
+find "::[OnOptions]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Options\" & goto endmod
+find "::[OnJoin]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Join\" & goto endmod
+find "::[OnLeave]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Leave\" & goto endmod
+call :c 0c "This Mod was not set up correctly and cannot be installed. See the help file on mods for more info."
+pause
+goto mods
+
+:endmod
+cls
+call :c 0a "Mod installed!"
+call :c 02 "You will need to restart for the mod to run."
+pause
+goto mods
+
+
+
+
+:mod1
+cls
+call :c d0 "======== Mod Manager Version 1.3 ========"
+echo 1] Add a Client Mod
+echo 2] Remove a Client Mod
+call :c 05 "X] Back]"
+choice /c 12x
+if %errorlevel%==3 goto mods
+if %errorlevel%==1 goto AddClient
+goto RemoveClient
+
+
+
+
+:AddClient
+cls
+call :c d0 "Please Select Mod To Install"
+for /f "tokens=*" %%A in ('call File-Choser.bat') do (set CFile=%%~A)
+if not exist "%CFile%" echo FILE NOT FOUND & pause & goto mods
+echo Scanning Mod . . .
+call :c 0f "This Mod Will get access to:"
+find /i "%%ftppass%%" "%CFile%" >nul
+if %errorlevel%==0 echo The Login details for your FTP Server
+find /i "copy" "%CFile%" >nul
+if %errorlevel%==0 echo Copying files on your computer
+find /i "Winhhtpjs" "%CFile%" >nul
+if %errorlevel%==0 echo Downloading files from the internet
+find /i "Bitsadmin" "%CFile% >nul
+if %errorlevel%==0 echo Downloading files from the internet (using BitsAdmin)
+find "certutil" "%CFile%" >nul
+if %errorlevel%==0 echo Some of this file cannot be scanned as it is condenced.
+echo.
+call :c 0c "Only install mods from sources you trust." 
+goto mod1
+echo Are you sure you want to install this mod?
+choice /c YN
+if %errorlevel%==2 goto mods
+call :c 0a "Installing . . ."
+if not exist Mods\ md Mods\Startup & md Mods\Refresh & md Mods\Options & md Mods\Join & md Mods\Leave
+find "::[OnStartup]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Startup\" & goto endmod
+find "::[OnRefresh]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Refresh\" & goto endmod
+find "::[OnOptions]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Options\" & goto endmod
+find "::[OnJoin]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Join\" & goto endmod
+find "::[OnLeave]" "%CFile%" >nul
+if %errorlevel%==0 copy "%CFile%" "Mods\Leave\" & goto endmod
+call :c 0c "This Mod was not set up correctly and cannot be installed. See the help file on mods for more info."
+pause
+goto mods
+
+:endmod
+cls
+call :c 0a "Mod installed!"
+call :c 02 "You will need to restart for the mod to run."
+pause
+goto mods
+
+
+
+
+:RemoveClient
+cls
+call :c 0d "Please Select a mod to remove"
+set nam=0
+for /f "tokens=*" %%A in ('dir /b /s Mods') do (
+	set /a nam+=1
+	set Mod!nam!==%%A
+	call :c 0f "!nam!] %%A"
+)
+call :c 05 "Enter X to exit"
+set /p ChoiceR=">"
+if /i "%ChoiceR%"=="X" goto mods
+if not exist "!Mod%ChoiceR%!" echo Mod not found & pause& goto RemoveClient
+echo Are you sure you want to uninstall "!Mod%ChoiceR%!?"
+choice
+if %errorlevel%==2 goto Mods
+call :c 0a "Removing Mod . . ."
+del /f /q "!Mod%ChoiceR%!"
+call :c 0a "Removed. Program will now exit."
+pause
+exit
+
 
 
 :colorchange
