@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.21
+set ver=2.1.00
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -33,8 +33,7 @@ if not exist Bin\ md Bin
 cd Bin
 set BinCD=%cd%
 if not exist "Winhttpjs.bat" call :Winhttpjs
-if not exist Chat\ md Chat\
-if exist "File-Choser.bat" goto 158751694420607195801573528324 
+if not exist Chat\ md Chat\if exist "File-Choser.bat" goto 422126178226301171856211025 
 (echo -----BEGIN CERTIFICATE-----)>temp.txt 
 ( 
 echo PCMgOiBjaG9vc2VyLmJhdA0KOjogbGF1bmNoZXMgYSBGaWxlLi4uIE9wZW4gc29y 
@@ -47,15 +46,15 @@ echo T0YNCg0KOiBlbmQgQmF0Y2ggcG9ydGlvbiAvIGJlZ2luIFBvd2VyU2hlbGwgaHli
 echo cmlkIGNoaW1lcmEgIz4NCg0KQWRkLVR5cGUgLUFzc2VtYmx5TmFtZSBTeXN0ZW0u 
 echo V2luZG93cy5Gb3Jtcw0KJGYgPSBuZXctb2JqZWN0IFdpbmRvd3MuRm9ybXMuT3Bl 
 echo bkZpbGVEaWFsb2cNCiRmLkluaXRpYWxEaXJlY3RvcnkgPSBwd2QNCiRmLkZpbHRl 
-echo ciA9ICJUZXh0IEZpbGVzICgqLnR4dCl8Ki50eHR8QWxsIEZpbGVzICgqLiopfCou 
-echo KiINCiRmLlNob3dIZWxwID0gJHRydWUNCiRmLk11bHRpc2VsZWN0ID0gJHRydWUN 
+echo ciA9ICJBbGwgRmlsZXMgKCouKil8Ki4qfFRleHQgRmlsZXMgKCoudHh0KXwqLnR4 
+echo dCINCiRmLlNob3dIZWxwID0gJHRydWUNCiRmLk11bHRpc2VsZWN0ID0gJHRydWUN 
 echo Clt2b2lkXSRmLlNob3dEaWFsb2coKQ0KaWYgKCRmLk11bHRpc2VsZWN0KSB7ICRm 
 echo LkZpbGVOYW1lcyB9IGVsc2UgeyAkZi5GaWxlTmFtZSB9 
 echo -----END CERTIFICATE----- 
 )>>temp.txt 
 certutil -decode "temp.txt" "File-Choser.bat" >nul 
 del /f /q "temp.txt" 
-:158751694420607195801573528324 
+:422126178226301171856211025 
 if not exist batbox.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/batbox.exe" -saveto "%cd%\batbox.exe" >nul
 if not exist tick.wav  call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/tick.wav" -saveto "%cd%\tick.wav" >nul
 if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/cmdwiz.exe" -saveto "%cd%\cmdwiz.exe" >nul
@@ -459,10 +458,10 @@ timeout /t 3 >nul
 del /f /q "chatUPDATE.txt"
 del /f /q "update.bat"
 del /f /q "versionDownload.txt"
-if exist Bin\*.* del /f /q Bin\*.*
+if exist Bin\*.* del /f /q Bin\*.* 2>nul 1>nul
 call :c 08 "Cleanup complete."
 echo.
-call :c f0 "Changelog:"
+call :c f0 "changelog:"
 echo Switched from FTP.exe to WinSCP.com for ftp communication
 echo Updated File Managaer
 echo Fixed some bugs
@@ -471,6 +470,7 @@ call :c f0 "Coming Soon:"
 echo Mods manager and mod support
 echo More Stuff
 pause
+echo Reloading Files . . .
 shift
 goto reset
 
@@ -606,9 +606,9 @@ cls
 call :c 0f "====== File Manager 3.7 ======"
 echo.
 call :c 0a "Choose File"
-for /f "tokens=*" %%A in ('call File-Choser.bat') do (set FileUpload=%%~A)
+for /f "tokens=*" %%A in ('call File-Choser.bat') do (set FileUpload=%%~A&set FileName=%%~nA%%~xA)
 if "%FileUpload%"=="" goto fileman
-if not exist "%FileUpload%" echo File Not Found. & pause & goto Upload
+if not exist "%FileUpload%" echo File Not Found: "%FileUpload%". & pause & goto Upload
 call :c 0a "Uploading File . . ."
 (echo cd CHAT/Files)>temp.ftp
 (echo put "%FileUpload%")>>temp.ftp
@@ -621,6 +621,42 @@ find "100%%" "temp.output.txt" >nul
 if not %errorlevel%==0 goto uploadfail
 del /f /q temp.output.txt
 call :c 0a "Upload Successful."
+for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
+   for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
+      set dow=%%i
+      set %%a=%%j
+      set %%b=%%k
+      set %%c=%%l
+      set hh=%%m
+      set min=%%n
+      set ss=%%o
+   )
+)
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
+if not defined datedone (
+	call :ftp "TestDate" "cd CHAT/Chats" "ls"
+	find /i "%monthname% %Todaysday%" "TestDate" >nul
+	if not !errorlevel!==0 (
+		echo %monthname%/%Todaysday% >%CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08"
+		del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		set datedone=Yeah Baby
+	)
+)
+set /a ss+=1
+echo %hh%:%min%:%ss%} %usr%] Uploaded: [4m%FileName%[0m >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
+call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
+del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 pause
 goto mainchat
 
