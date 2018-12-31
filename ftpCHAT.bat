@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.1.00
+set ver=2.0.19
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -33,28 +33,29 @@ if not exist Bin\ md Bin
 cd Bin
 set BinCD=%cd%
 if not exist "Winhttpjs.bat" call :Winhttpjs
-if not exist Chat\ md Chat\if exist "File-Choser.bat" goto 422126178226301171856211025 
+if exist "File-Choser.bat" goto 24621130232788320431158054879 
 (echo -----BEGIN CERTIFICATE-----)>temp.txt 
 ( 
 echo PCMgOiBjaG9vc2VyLmJhdA0KOjogbGF1bmNoZXMgYSBGaWxlLi4uIE9wZW4gc29y 
 echo dCBvZiBmaWxlIGNob29zZXIgYW5kIG91dHB1dHMgY2hvaWNlKHMpIHRvIHRoZSBj 
 echo b25zb2xlDQo6OiBodHRwczovL3N0YWNrb3ZlcmZsb3cuY29tL2EvMTU4ODUxMzMv 
-echo MTY4MzI2NA0KDQpAZWNobyBvZmYNCnNldGxvY2FsDQoNCmZvciAvZiAiZGVsaW1z 
-echo PSIgJSVJIGluICgncG93ZXJzaGVsbCAtbm9wcm9maWxlICJpZXggKCR7JX5mMH0g 
-echo fCBvdXQtc3RyaW5nKSInKSBkbyAoDQogICAgZWNobyAlJX5JDQopDQpnb3RvIDpF 
-echo T0YNCg0KOiBlbmQgQmF0Y2ggcG9ydGlvbiAvIGJlZ2luIFBvd2VyU2hlbGwgaHli 
-echo cmlkIGNoaW1lcmEgIz4NCg0KQWRkLVR5cGUgLUFzc2VtYmx5TmFtZSBTeXN0ZW0u 
-echo V2luZG93cy5Gb3Jtcw0KJGYgPSBuZXctb2JqZWN0IFdpbmRvd3MuRm9ybXMuT3Bl 
-echo bkZpbGVEaWFsb2cNCiRmLkluaXRpYWxEaXJlY3RvcnkgPSBwd2QNCiRmLkZpbHRl 
-echo ciA9ICJBbGwgRmlsZXMgKCouKil8Ki4qfFRleHQgRmlsZXMgKCoudHh0KXwqLnR4 
-echo dCINCiRmLlNob3dIZWxwID0gJHRydWUNCiRmLk11bHRpc2VsZWN0ID0gJHRydWUN 
-echo Clt2b2lkXSRmLlNob3dEaWFsb2coKQ0KaWYgKCRmLk11bHRpc2VsZWN0KSB7ICRm 
-echo LkZpbGVOYW1lcyB9IGVsc2UgeyAkZi5GaWxlTmFtZSB9 
+echo MTY4MzI2NA0KDQpAZWNobyBvZmYNCnNldGxvY2FsDQpwdXNoZCAiQzpcVXNlcnNc 
+echo JXVzZXJuYW1lJSINCmZvciAvZiAiZGVsaW1zPSIgJSVJIGluICgncG93ZXJzaGVs 
+echo bCAtbm9wcm9maWxlICJpZXggKCR7JX5mMH0gfCBvdXQtc3RyaW5nKSInKSBkbyAo 
+echo DQogICAgZWNobyAlJX5JDQopDQpwb3BkDQpnb3RvIDpFT0YNCg0KOiBlbmQgQmF0 
+echo Y2ggcG9ydGlvbiAvIGJlZ2luIFBvd2VyU2hlbGwgaHlicmlkIGNoaW1lcmEgIz4N 
+echo Cg0KQWRkLVR5cGUgLUFzc2VtYmx5TmFtZSBTeXN0ZW0uV2luZG93cy5Gb3Jtcw0K 
+echo JGYgPSBuZXctb2JqZWN0IFdpbmRvd3MuRm9ybXMuT3BlbkZpbGVEaWFsb2cNCiRm 
+echo LkluaXRpYWxEaXJlY3RvcnkgPSBwd2QNCiRmLkZpbHRlciA9ICJBbGwgRmlsZXMg 
+echo KCouKil8Ki4qfFRleHQgRmlsZXMgKCoudHh0KXwqLnR4dCINCiRmLlNob3dIZWxw 
+echo ID0gJHRydWUNCiRmLk11bHRpc2VsZWN0ID0gJEZhbHNlDQpbdm9pZF0kZi5TaG93 
+echo RGlhbG9nKCkNCmlmICgkZi5NdWx0aXNlbGVjdCkgeyAkZi5GaWxlTmFtZXMgfSBl 
+echo bHNlIHsgJGYuRmlsZU5hbWUgfQ== 
 echo -----END CERTIFICATE----- 
 )>>temp.txt 
 certutil -decode "temp.txt" "File-Choser.bat" >nul 
 del /f /q "temp.txt" 
-:422126178226301171856211025 
+:24621130232788320431158054879 
 if not exist batbox.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/batbox.exe" -saveto "%cd%\batbox.exe" >nul
 if not exist tick.wav  call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/tick.wav" -saveto "%cd%\tick.wav" >nul
 if not exist cmdwiz.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/cmdwiz.exe" -saveto "%cd%\cmdwiz.exe" >nul
