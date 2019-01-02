@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.0.19
+set ver=2.1.0
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -63,6 +63,7 @@ if not exist LC.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/r
 if not exist WinSCP.exe call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.exe" -saveto "%cd%\WinSCP.exe" >nul
 if not exist WinSCP.com call winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/WinSCP.com" -saveto "%cd%\WinSCP.com" >nul
 if not exist "FTP-CHAT-Listener.bat" call winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/FTP-CHAT-Listener.bat" -saveto "%cd%\FTP-CHAT-Listener.bat" >nul
+if not exist "nircmd.exe" call :makeNir
 if not exist "C:\users\%username%\Appdata\FTPCHAT\" md "C:\users\%username%\Appdata\FTPCHAT\"
 if "%~1"=="updated" goto cleanupdate
 if "%~1"=="updatedSetup" goto cleanupdateSetup
@@ -503,11 +504,11 @@ for /f "tokens=*" %%A in (chatorder.txt) do (
 	cd ..
 )
 :wait
-title ITCMD FTP-Chat by Lucas Elliott   ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online
+title ITCMD FTP-Chat by Lucas Elliott   ^| T-Talk ^| H-Help ^| U-Update ^| O-Options ^| F-Files ^| V-Online ^| S-Screenshot ^| X-Exit
 cd Chat
 for /f %%A in ('dir ^| find "File(s)"') do set cnt=%%A
 cd ..
-choice /c QTBUOFVH /d Q /t %updateDelay% /n >nul
+choice /c QTBUOFVHSX /d Q /t %updateDelay% /n >nul
 if %errorlevel%==1 goto refresh
 if %errorlevel%==2 goto talk
 if %errorlevel%==4 goto update
@@ -516,7 +517,65 @@ if %errorlevel%==3 goto viewCode
 if %errorlevel%==6 goto fileman
 if %errorlevel%==7 goto onlineping
 if %errorlevel%==8 goto help
+if %errorlevel%==9 goto Screenshot
+if %errorlevel%==10 exit
 goto wait
+
+
+:Screenshot
+cls
+call :c 0a "This will upload a screenshot to the File Manager."
+call :c 0f "Continue?"
+choice 
+if %errorlevel%==2 goto mainchat
+echo MsgBox "Press Ok to take screenshot.", 4096, "FTP-Chat Screenshot" >msg.vbs
+cscript msg.vbs >nul
+for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
+   for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
+      set dow=%%i
+      set %%a=%%j
+      set %%b=%%k
+      set %%c=%%l
+      set hh=%%m
+      set min=%%n
+      set ss=%%o
+   )
+)
+for /F "skip=1 delims=" %%F in ('
+    wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
+') do (
+    for /F "tokens=1-3" %%L in ("%%F") do (
+        set CurrDay=0%%L
+        set CurrMonth=0%%M
+        set CurrYear=%%N
+    )
+)
+set CurrMonth=%CurrMonth:~-2%
+set CurrDay=%CurrDay:~-2%
+if not defined datedone (
+	call :ftp "TestDate" "cd CHAT/Chats" "ls"
+	find /i "%monthname% %Todaysday%" "TestDate" >nul
+	if not !errorlevel!==0 (
+		echo %monthname%/%Todaysday% >%CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08"
+		del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.date.08
+		set datedone=Yeah Baby
+	)
+)
+set /a ss+=1
+nircmd savescreenshot "Screenshot-%usr%-%CurrMonth%.%CurrDay%.%hh%.%min%.%ss%.png"
+call :c 0a "Screenshot taken . . ."
+call :c 08 "Uploading . . ."
+call :ftp "nul" "cd CHAT" "cd Files" "put Screenshot-%usr%-%CurrMonth%.%CurrDay%.%hh%.%min%.%ss%.png"
+del /f /q "Screenshot-%usr%-%CurrMonth%.%CurrDay%.%hh%.%min%.%ss%.png"
+
+
+echo %hh%:%min%:%ss%} %usr%] [4mUploaded a Screenshot[0m >%CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
+call :ftp "puchat.txt" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
+del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
+echo Done!
+pause
+goto mainchat
 
 
 :onlineping
@@ -548,6 +607,12 @@ echo.
 call :c 0a "Press any key to continue . . ."
 pause >nul
 goto mainchat
+
+
+:makeNir
+if /i "%processor_architecture%"=="x86" set type=32
+call Winhttpjs.bat "https://github.com/ITCMD/ITCMD-STORAGE/raw/master/nircmd%type%.exe" -saveto "%cd%\Nircmd.exe" >nul
+exit /b
 
 
 :fileman
@@ -604,6 +669,7 @@ goto mainchat
 
 :Upload
 cls
+color 08
 call :c 0f "====== File Manager 3.7 ======"
 echo.
 call :c 0a "Choose File"
@@ -615,12 +681,10 @@ call :c 0a "Uploading File . . ."
 (echo put "%FileUpload%")>>temp.ftp
 (echo exit)>>temp.ftp
 ::FTPUSED
-WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server% >temp.output.txt
+WinSCP.com /open /ini=nul /script=temp.ftp ftp://%ftpusr%:%ftppass%@%server%
 ::ftp -s:temp.ftp %server% >temp.output.txt
 del /f /q temp.ftp
-find "100%%" "temp.output.txt" >nul
 if not %errorlevel%==0 goto uploadfail
-del /f /q temp.output.txt
 call :c 0a "Upload Successful."
 for /f "tokens=1-7 delims=:/-, " %%i in ('echo exit^|cmd /q /k"prompt $d $t"') do (
    for /f "tokens=2-4 delims=/-,() skip=1" %%a in ('echo.^|date') do (
@@ -659,14 +723,13 @@ echo %hh%:%min%:%ss%} %usr%] Uploaded: [4m%FileName%[0m >%CurrMonth%%CurrDay%%
 call :ftp "nul" "cd CHAT" "cd Chats" "put %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%"
 del /f /q %CurrMonth%%CurrDay%%hh%%min%%ss%.chat.%usercolor%
 pause
+color %defaultColor%
 goto mainchat
 
 :uploadfail
-color 08
 call :c 0c "Upload Failed."
-call :c 02 "Log File:"
-type temp.output.txt"
 pause
+color %defaultColor%
 goto mainchat
 
 
