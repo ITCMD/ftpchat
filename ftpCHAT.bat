@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.1.0
+set ver=2.1.1
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -136,6 +136,7 @@ call :ftp "tempout.txt" "cd CHAT" "rm 54.dll" "put 54.dll"
 del /f /q 54.dll
 call :C 0a "Restarting . . ."
 timeout /t 2 >nul
+cd ..
 start "" "%~0"
 exit
 
@@ -154,6 +155,8 @@ del /f /q 54.dll
 Endlocal
 (echo set usr=%usr%)>"C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd"
 call :C 0a "Restarting . . ."
+timeout /t 2 >nul
+cd ..
 start "" "%~0"
 exit
 
@@ -193,7 +196,13 @@ call :c 0c "COULD NOT CONNECT"
 echo The Server is offline or unconnectable for another reason.
 echo.
 type "getWelcome.txt"
-pause
+echo.
+echo 1] Try again
+echo 2] Re-enter login details
+echo 3] Exit
+choice /c 123
+if %errorlevel%==1 cd .. & goto reset
+if %errorlevel%==2 del /f /q "C:\users\%username%\Appdata\FTPCHAT\ServerInfo.itcmd" & del /f /q "C:\users\%username%\Appdata\FTPCHAT\UserInfo.itcmd" & cd .. & goto reset
 exit /b
 
 
@@ -427,6 +436,13 @@ exit /b
 :update
 cd ..
 cls
+if "%ver%"=="Experimental" (
+	set rn=%random%
+	echo you are in experimental mode.
+	echo To confirm update Type in: %rn%
+	set /p rnt=">"
+	if not "%rnt%"=="%rn%" goto mainchat
+)
 call :c 0a "Checking for update . . ."
 call :c 08 "This Version: %ver%"
 call %bincd%\winhttpjs.bat "https://github.com/ITCMD/ftpchat/raw/master/version.download" -saveto "%cd%\versionDownload.txt" >nul
@@ -464,8 +480,8 @@ if exist Bin\*.* del /f /q Bin\*.* 2>nul 1>nul
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Switched from FTP.exe to WinSCP.com for ftp communication
-echo Updated File Managaer
+echo Fixed sign in process
+echo Added options on failure to connect
 echo Fixed some bugs
 echo Added Bug Report System.
 call :c f0 "Coming Soon:"
@@ -779,7 +795,7 @@ cls
 echo Are you sure you want to report a bug? (Press Y/N)
 call :c 08 "You can only send one bug report each day."
 choice /c YN /n
-if %errorlevel%==2 goto setting
+if %errorlevel%==2 goto options
 cls
 echo What Type of Bug is it?
 echo.
