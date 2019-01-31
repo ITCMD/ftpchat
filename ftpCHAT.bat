@@ -32,6 +32,8 @@ set num=0
 if not exist Bin\ md Bin
 cd Bin
 set BinCD=%cd%
+if not exist Online md Online
+if not exist Chat md Chat
 if not exist "Winhttpjs.bat" call :Winhttpjs
 if exist "File-Choser.bat" goto 24621130232788320431158054879 
 (echo -----BEGIN CERTIFICATE-----)>temp.txt 
@@ -480,8 +482,8 @@ if exist Bin\*.* del /f /q Bin\*.* 2>nul 1>nul
 call :c 08 "Cleanup complete."
 echo.
 call :c f0 "changelog:"
-echo Fixed sign in process
-echo Added options on failure to connect
+echo Switched from FTP.exe to WinSCP.com for ftp communication
+echo Updated File Managaer
 echo Fixed some bugs
 echo Added Bug Report System.
 call :c f0 "Coming Soon:"
