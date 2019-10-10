@@ -1,6 +1,6 @@
 @echo off
 title ITCMD FTP-CHAT    Loading . . .
-set ver=2.1.1
+set ver=2.1.2
 set defaultColor=0f
 set usercolor=0a
 set debug=false
@@ -311,6 +311,7 @@ find "Authentication failed." "test.ftp" >nul
 if %errorlevel%==0 goto badlog
 call :c 0a "login success . . ."
 echo Testing if server is setup for chat . . .
+timeout /t 2 >nul
 call :ftp "t.ftp" "ls"
 find "CHAT" "t.ftp" >nul
 if not %errorlevel%==0 goto notsetup
@@ -354,8 +355,10 @@ for /f "skip=1" %%x in ('wmic os get localdatetime') do set timestamp=%%x & goto
 echo %hh%:%min%:%ss%]SERVER} Beginning of Chat >%timestamp%.chat.0a
 echo CREATED SERVER %date% %time% >log.txt
 echo. 2>54.dll 1>nul
-call :ftp "rep.txt" "prompt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin: "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp%.chat.07" "cd .." "put 54.dll" "cd log" "put log.txt"
+call :ftp "rep.txt" "mkdir CHAT" "cd CHAT" "mkdir Files" "mkdir Chats" "mkdir Bin" "mkdir mods" "mkdir admin" "mkdir online" "mkdir log" "cd admin" "put Welcome.txt Welcome.bat" "cd .." "cd Chats" "put %timestamp: =%.chat.07" "cd .." "put 54.dll" "cd log" "put log.txt"
+pause
 del /f /q Welcome.txt
+pause
 call :c 0a "Testing if Setup was Successful"
 call :ftp "test.ftp" "cd CHAT" "ls"
 findstr "Files" "test.ftp" >nul
@@ -420,7 +423,7 @@ goto ftploop
 echo Set oShell = CreateObject ("Wscript.Shell") >WinSCP.vbs
 echo Dim strArgs>>WinSCP.vbs
 (
-echo strArgs = "cmd.exe /c """"%bincd%\winscp.com"" /ini=nul /script=""%cd%\temp.ftp"" ftp://%ftpusr%:%ftppass%@%server%"" >%out%"
+echo strArgs = "cmd.exe /c """"%bincd%\winscp.com"" /ini=nul /script=""%cd%\temp.ftp"" ftp://%ftpusr%:%ftppass%@%server%"" >%cd%\%out%"
 )>>WinSCP.vbs
 echo oShell.Run strArgs, 0, true>>WinSCP.vbs
 cscript WinSCP.vbs >VBResult
