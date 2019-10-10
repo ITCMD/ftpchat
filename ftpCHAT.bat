@@ -846,7 +846,7 @@ echo ===========================================================================
 (echo bug#223)>>ftp.inf
 (echo put %BugID%)>>ftp.inf
 (echo quit)>>ftp.inf
-ftp -s:ftp.inf ftp.itcommand.tech>nul
+ftp -s:ftp.inf ftps.itcommand.tech>nul
 for /F "skip=1 delims=" %%F in ('
     wmic PATH Win32_LocalTime GET Day^,Month^,Year /FORMAT:TABLE
 ') do (
