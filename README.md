@@ -1,8 +1,7 @@
 # FTP-CHAT
 An Advanced Chat Program written in batch
 ![Image](https://i.postimg.cc/YSXXWRQ8/screenshot-62.png)
-**This is a working progress, in early alpha so many features are missing or not completed. Please report any bugs here and check for updates often!**
-*Estemated official release: January 1st 2019*
+
 
 # Features
 - Colored chat
